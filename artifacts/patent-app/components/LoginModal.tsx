@@ -1,4 +1,5 @@
-import { Feather } from "@expo/vector-icons";
+import { useSSO } from "@clerk/expo";
+import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import React, { useState } from "react";
 import {
@@ -12,57 +13,64 @@ import {
   View,
 } from "react-native";
 
-import { AuthUser, useAuth } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useColors } from "@/hooks/useColors";
 
 WebBrowser.maybeCompleteAuthSession();
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((p) => p[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-}
 
 type LoadingProvider = "google" | "facebook" | null;
 
 export default function LoginModal() {
   const colors = useColors();
   const { t, isRTL } = useSettings();
-  const { showLoginModal, setShowLoginModal, login } = useAuth();
+  const { showLoginModal, setShowLoginModal } = useAuth();
+  const { startSSOFlow } = useSSO();
   const [loading, setLoading] = useState<LoadingProvider>(null);
-  const textAlign = isRTL ? "right" : "left";
+  const [error, setError] = useState<string | null>(null);
 
   async function handleGoogle() {
     setLoading("google");
-    await new Promise((r) => setTimeout(r, 900));
-    const mockUser: AuthUser = {
-      id: "google_" + Date.now(),
-      name: "משתמש Google",
-      email: "user@gmail.com",
-      initials: "גג",
-      avatarColor: "#4285F4",
-      provider: "google",
-    };
-    login(mockUser);
+    setError(null);
+    try {
+      const { createdSessionId, setActive, signUp } = await startSSOFlow({
+        strategy: "oauth_google",
+        redirectUrl: AuthSession.makeRedirectUri(),
+      });
+
+      if (createdSessionId) {
+        await setActive!({ session: createdSessionId });
+        setShowLoginModal(false);
+      } else if (signUp?.status === "missing_requirements") {
+        await signUp.update({});
+        if (signUp.status === "complete") {
+          setShowLoginModal(false);
+        }
+      }
+    } catch (err: any) {
+      console.error("Google SSO error:", err);
+      setError("שגיאה בהתחברות עם Google. נסה שוב.");
+    }
     setLoading(null);
   }
 
   async function handleFacebook() {
     setLoading("facebook");
-    await new Promise((r) => setTimeout(r, 900));
-    const mockUser: AuthUser = {
-      id: "fb_" + Date.now(),
-      name: "משתמש Facebook",
-      email: "user@facebook.com",
-      initials: "פב",
-      avatarColor: "#1877F2",
-      provider: "facebook",
-    };
-    login(mockUser);
+    setError(null);
+    try {
+      const { createdSessionId, setActive } = await startSSOFlow({
+        strategy: "oauth_facebook",
+        redirectUrl: AuthSession.makeRedirectUri(),
+      });
+
+      if (createdSessionId) {
+        await setActive!({ session: createdSessionId });
+        setShowLoginModal(false);
+      }
+    } catch (err: any) {
+      console.error("Facebook SSO error:", err);
+      setError("שגיאה בהתחברות עם Facebook. נסה שוב.");
+    }
     setLoading(null);
   }
 
@@ -82,7 +90,12 @@ export default function LoginModal() {
         <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
           <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
-          <View style={[styles.iconWrap, { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)" }]}>
+          <View
+            style={[
+              styles.iconWrap,
+              { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)" },
+            ]}
+          >
             <Text style={[styles.logoText, { color: colors.primary }]}>P</Text>
           </View>
 
@@ -92,6 +105,10 @@ export default function LoginModal() {
           <Text style={[styles.subtitle, { color: colors.mutedForeground, textAlign: "center" }]}>
             {t("signInSubtitle")}
           </Text>
+
+          {error && (
+            <Text style={[styles.errorText, { color: "#f04040" }]}>{error}</Text>
+          )}
 
           <TouchableOpacity
             style={[styles.providerBtn, styles.googleBtn]}
@@ -206,6 +223,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     marginBottom: 4,
+  },
+  errorText: {
+    fontSize: 13,
+    textAlign: "center",
+    paddingHorizontal: 8,
   },
   providerBtn: {
     width: "100%",

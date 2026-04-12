@@ -1,5 +1,5 @@
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useAuth as useClerkAuth, useUser } from "@clerk/expo";
 
 export type AuthUser = {
   id: string;
@@ -7,13 +7,13 @@ export type AuthUser = {
   email: string;
   initials: string;
   avatarColor: string;
-  provider: "google" | "facebook";
+  avatarUrl?: string;
+  provider: string;
 };
 
 type AuthContextType = {
   user: AuthUser | null;
   isLoggedIn: boolean;
-  login: (user: AuthUser) => void;
   logout: () => void;
   showLoginModal: boolean;
   setShowLoginModal: (v: boolean) => void;
@@ -22,48 +22,83 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((p) => p[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  const { isSignedIn, signOut, isLoaded } = useClerkAuth();
+  const { user: clerkUser } = useUser();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const pendingAction = useRef<(() => void) | null>(null);
+  const prevSignedIn = useRef<boolean | null>(null);
 
   useEffect(() => {
-    AsyncStorage.getItem("@patent:auth_user").then((json) => {
-      if (json) setUser(JSON.parse(json));
-    });
-  }, []);
-
-  const login = useCallback((u: AuthUser) => {
-    setUser(u);
-    AsyncStorage.setItem("@patent:auth_user", JSON.stringify(u));
-    setShowLoginModal(false);
-    if (pendingAction.current) {
-      const action = pendingAction.current;
-      pendingAction.current = null;
-      setTimeout(action, 150);
+    if (!isLoaded) return;
+    if (prevSignedIn.current === false && isSignedIn === true) {
+      setShowLoginModal(false);
+      if (pendingAction.current) {
+        const action = pendingAction.current;
+        pendingAction.current = null;
+        setTimeout(action, 200);
+      }
     }
-  }, []);
+    prevSignedIn.current = isSignedIn ?? false;
+  }, [isSignedIn, isLoaded]);
 
-  const logout = useCallback(() => {
-    setUser(null);
-    AsyncStorage.removeItem("@patent:auth_user");
-  }, []);
+  const logout = useCallback(async () => {
+    await signOut();
+  }, [signOut]);
 
   const requireAuth = useCallback(
     (action: () => void) => {
-      if (user) {
+      if (isSignedIn) {
         action();
       } else {
         pendingAction.current = action;
         setShowLoginModal(true);
       }
     },
-    [user]
+    [isSignedIn]
   );
+
+  const user: AuthUser | null = clerkUser
+    ? {
+        id: clerkUser.id,
+        name:
+          clerkUser.fullName ??
+          clerkUser.username ??
+          clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0] ??
+          "משתמש",
+        email: clerkUser.primaryEmailAddress?.emailAddress ?? "",
+        initials: getInitials(
+          clerkUser.fullName ??
+            clerkUser.username ??
+            clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0] ??
+            "U"
+        ),
+        avatarColor: "#4285F4",
+        avatarUrl: clerkUser.imageUrl,
+        provider: clerkUser.externalAccounts[0]?.provider ?? "google",
+      }
+    : null;
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn: !!user, login, logout, showLoginModal, setShowLoginModal, requireAuth }}
+      value={{
+        user,
+        isLoggedIn: !!isSignedIn,
+        logout,
+        showLoginModal,
+        setShowLoginModal,
+        requireAuth,
+      }}
     >
       {children}
     </AuthContext.Provider>
