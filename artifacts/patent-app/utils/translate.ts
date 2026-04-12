@@ -1,58 +1,39 @@
-const cache: Record<string, string> = {};
+import { Platform } from "react-native";
 
-async function tryGoogleTranslate(text: string, targetLang: string, sourceLang: string): Promise<string> {
-  const tl = targetLang === "zh" ? "zh-CN" : targetLang === "nb" ? "no" : targetLang;
-  const sl = sourceLang === "auto" ? "auto" : sourceLang;
-  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`;
+const memCache: Record<string, string> = {};
 
-  const res = await fetch(url);
-  if (!res.ok) throw new Error("Google translate failed");
-  const data = await res.json();
-
-  if (!Array.isArray(data) || !Array.isArray(data[0])) throw new Error("Bad response");
-  const parts: string[] = [];
-  for (const chunk of data[0]) {
-    if (Array.isArray(chunk) && typeof chunk[0] === "string") parts.push(chunk[0]);
+function getApiBase(): string {
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  if (domain) return `https://${domain}/api-server/api`;
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return `${window.location.origin}/api-server/api`;
   }
-  const result = parts.join("").trim();
-  if (!result) throw new Error("Empty result");
-  return result;
+  return "http://localhost:8080/api";
 }
 
-async function tryMyMemory(text: string, targetLang: string, sourceLang: string): Promise<string> {
-  const langCode = targetLang === "zh" ? "zh-CN" : targetLang === "nb" ? "no" : targetLang;
-  const sl = sourceLang === "auto" ? "he" : sourceLang;
-  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=${sl}|${langCode}`;
-
-  const response = await fetch(url);
-  if (!response.ok) throw new Error("MyMemory failed");
-  const data = await response.json();
-  if (data.responseStatus !== 200) throw new Error(data.responseMessage ?? "Translation error");
-
-  const translated: string = data.responseData.translatedText;
-  if (!translated) throw new Error("Empty result");
-  return translated;
+async function translateViaBackend(text: string, targetLang: string, sourceLang: string): Promise<string> {
+  const base = getApiBase();
+  const res = await fetch(`${base}/translate`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text, targetLang, sourceLang }),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({})) as { error?: string };
+    throw new Error(err.error ?? `Translation failed: ${res.status}`);
+  }
+  const data = await res.json() as { translated: string };
+  return data.translated;
 }
 
 export async function translateText(text: string, targetLang: string, sourceLang = "auto"): Promise<string> {
-  if (targetLang === "he") return text;
   if (!text.trim()) return text;
 
   const cacheKey = `${sourceLang}|${targetLang}|${text}`;
-  if (cache[cacheKey]) return cache[cacheKey];
+  if (memCache[cacheKey]) return memCache[cacheKey];
 
-  let result: string;
+  const result = await translateViaBackend(text, targetLang, sourceLang);
 
-  try {
-    result = await tryGoogleTranslate(text, targetLang, sourceLang);
-  } catch {
-    try {
-      result = await tryMyMemory(text, targetLang, sourceLang === "auto" ? "he" : sourceLang);
-    } catch {
-      throw new Error("Translation failed");
-    }
-  }
-
-  cache[cacheKey] = result;
+  memCache[cacheKey] = result;
   return result;
 }

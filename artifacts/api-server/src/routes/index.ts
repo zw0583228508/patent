@@ -6,11 +6,13 @@ import commentsRouter from "./comments";
 import notificationsRouter from "./notifications";
 import uploadRouter from "./upload";
 import authRouter from "./auth";
+import translateRouter from "./translate";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use("/auth", authRouter);
+router.use("/translate", translateRouter);
 router.use("/posts", postsRouter);
 router.use("/users", usersRouter);
 router.use("/comments", commentsRouter);
