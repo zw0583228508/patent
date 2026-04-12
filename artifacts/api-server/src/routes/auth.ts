@@ -14,10 +14,10 @@ const JWT_SECRET = process.env.SESSION_SECRET ?? "patent-secret-change-me";
 function buildCallbackUri(req: any): string {
   if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
   const replitDomain = process.env.REPLIT_DEV_DOMAIN;
-  if (replitDomain) return `https://${replitDomain}/api-server/api/auth/google/callback`;
+  if (replitDomain) return `https://${replitDomain}/api/auth/google/callback`;
   const proto = (req.headers["x-forwarded-proto"] as string) ?? "http";
   const host = req.headers.host as string;
-  return `${proto}://${host}/api-server/api/auth/google/callback`;
+  return `${proto}://${host}/api/auth/google/callback`;
 }
 
 function makeOAuth2(redirectUri: string) {

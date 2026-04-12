@@ -11,8 +11,8 @@ const TOKEN_KEY = "@patent:auth_token";
 
 function getApiBase(): string {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}/api-server/api`;
-  if (typeof window !== "undefined") return `${window.location.origin}/api-server/api`;
+  if (domain) return `https://${domain}/api`;
+  if (typeof window !== "undefined") return `${window.location.origin}/api`;
   return "http://localhost:8080/api";
 }
 
@@ -38,9 +38,9 @@ export default function GoogleCallbackScreen() {
       }
 
       try {
-        const redirectUri = typeof window !== "undefined"
-          ? `${window.location.origin}/auth/google/callback`
-          : `${getApiBase().replace("/api-server/api", "")}/auth/google/callback`;
+        const domain = process.env.EXPO_PUBLIC_DOMAIN;
+        const base = domain ? `https://${domain}` : (typeof window !== "undefined" ? window.location.origin : "http://localhost:8080");
+        const redirectUri = `${base}/api/auth/google/callback`;
 
         const resp = await fetch(`${getApiBase()}/auth/google/exchange-code`, {
           method: "POST",

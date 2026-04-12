@@ -30,9 +30,9 @@ const GOOGLE_DISCOVERY = {
 
 function getApiBase(): string {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}/api-server/api`;
+  if (domain) return `https://${domain}/api`;
   if (Platform.OS === "web" && typeof window !== "undefined") {
-    return `${window.location.origin}/api-server/api`;
+    return `${window.location.origin}/api`;
   }
   return "http://localhost:8080/api";
 }
@@ -122,8 +122,7 @@ export default function LoginModal() {
     }, SSO_TIMEOUT_MS);
 
     const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const callbackUri = `${origin}/auth/google/callback`;
-    const authUrl = `${getApiBase()}/auth/google?origin=${encodeURIComponent(origin)}&callback=${encodeURIComponent(callbackUri)}`;
+    const authUrl = `${getApiBase()}/auth/google?origin=${encodeURIComponent(origin)}`;
     const popup = window.open(authUrl, "patent_google_auth", "width=500,height=650,scrollbars=yes,resizable=yes");
 
     if (!popup) {
