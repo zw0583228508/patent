@@ -3,11 +3,11 @@ import { Platform } from "react-native";
 const memCache: Record<string, string> = {};
 
 function getApiBase(): string {
+  if (Platform.OS === "web") {
+    return "/api-server/api";
+  }
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
   if (domain) return `https://${domain}/api-server/api`;
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    return `${window.location.origin}/api-server/api`;
-  }
   return "http://localhost:8080/api";
 }
 
