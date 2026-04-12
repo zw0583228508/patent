@@ -4,6 +4,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -13,6 +14,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
+import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { CATEGORIES } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
@@ -21,6 +23,7 @@ export default function PostScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useSettings();
+  const { addPost } = useFeed();
   const params = useLocalSearchParams<{ type?: string }>();
   const [postType, setPostType] = useState<"tip" | "question">(
     params.type === "question" ? "question" : "tip"
@@ -66,6 +69,7 @@ export default function PostScreen() {
     if (!text.trim() && media.length === 0) return;
     if (Platform.OS !== "web")
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    addPost(postType, text.trim(), category);
     router.back();
   }
 
@@ -119,7 +123,7 @@ export default function PostScreen() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.body}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.body} keyboardShouldPersistTaps="handled">
         <View style={[styles.typeRow, { flexDirection: dir }]}>
           {POST_TYPES.map((pt) => {
             const active = postType === pt.id;
@@ -264,7 +268,7 @@ export default function PostScreen() {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
+      </ScrollView>
     </View>
   );
 }
