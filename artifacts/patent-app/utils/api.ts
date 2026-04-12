@@ -1,11 +1,11 @@
 import { Platform } from "react-native";
 
 function getBaseUrl() {
-  if (Platform.OS === "web") {
-    return "/api-server/api";
-  }
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
-  if (domain) return `https://${domain}/api-server/api`;
+  if (domain) return `https://${domain}/api`;
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return `${window.location.origin}/api`;
+  }
   return "http://localhost:8080/api";
 }
 
