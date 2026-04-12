@@ -8,11 +8,11 @@ import {
   KeyboardAvoidingView,
   Modal,
   Platform,
+  Pressable,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,6 +22,7 @@ import TranslateButton from "@/components/TranslateButton";
 import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useToast } from "@/context/ToastContext";
 import { Comment } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -44,11 +45,13 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const { comments, addComment } = useFeed();
   const { t, isRTL } = useSettings();
   const { requireAuth } = useAuth();
+  const { showToast } = useToast();
   const [text, setText] = useState("");
   const [media, setMedia] = useState<MediaAsset[]>([]);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set());
   const [translatedComments, setTranslatedComments] = useState<Record<string, string | null>>({});
+  const inputRef = useRef<TextInput>(null);
 
   const itemComments: Comment[] = comments[itemId] ?? [];
 
@@ -73,6 +76,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
       addComment(itemId, text.trim());
       setText("");
       setMedia([]);
+      showToast(t("toastCommentAdded"), "success", "message-circle");
     });
   }
 
@@ -127,16 +131,19 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose} statusBarTranslucent>
-      <TouchableWithoutFeedback onPress={onClose}>
-        <View style={styles.backdrop} />
-      </TouchableWithoutFeedback>
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
+      {/* Backdrop — only triggers onClose when pressed directly, not from inside the sheet */}
+      <Pressable style={styles.backdrop} onPress={onClose} />
 
+      {/* Sheet — intercepts all touch events to prevent backdrop from firing */}
       <Animated.View
         style={[
           styles.sheet,
           { backgroundColor: colors.surface, borderTopColor: colors.border, height: sheetHeight, transform: [{ translateY }] },
         ]}
+        // Capture ALL responder events so they don't reach the backdrop
+        onStartShouldSetResponder={() => false}
+        onMoveShouldSetResponder={() => false}
       >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
@@ -172,7 +179,10 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
           }
         />
 
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={0}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={0}
+        >
           <View style={[styles.inputArea, { borderTopColor: colors.border, paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 8) }]}>
             <MediaPicker media={media} onChange={setMedia} compact />
             <View style={[styles.inputRow, { flexDirection: dir }]}>
@@ -180,6 +190,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
                 <Text style={styles.myAvatarText}>יכ</Text>
               </View>
               <TextInput
+                ref={inputRef}
                 style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.foreground }]}
                 placeholder={isQuestion ? t("writeAnswer") : t("addComment")}
                 placeholderTextColor={colors.mutedForeground}
@@ -187,6 +198,8 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
                 onChangeText={setText}
                 textAlign={textAlign as any}
                 multiline
+                blurOnSubmit={false}
+                onSubmitEditing={handleSubmit}
                 testID="comment-input"
               />
               <TouchableOpacity

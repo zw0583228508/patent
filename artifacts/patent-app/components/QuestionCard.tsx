@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useSocial } from "@/context/SocialContext";
+import { useToast } from "@/context/ToastContext";
 import { Question } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -32,6 +33,7 @@ export default function QuestionCard({ question }: Props) {
   const { likedIds, comments, toggleLike } = useFeed();
   const { follow, unfollow, isFollowing } = useSocial();
   const { requireAuth } = useAuth();
+  const { showToast } = useToast();
   const liked = likedIds.has(question.id);
   const following = isFollowing(question.userId);
   const isMyQuestion = question.userId === "me";
@@ -46,8 +48,8 @@ export default function QuestionCard({ question }: Props) {
   function handleFollow() {
     requireAuth(() => {
       if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      if (following) unfollow(question.userId);
-      else follow(question.userId);
+      if (following) { unfollow(question.userId); showToast(t("toastUnfollowed"), "info", "user-minus"); }
+      else { follow(question.userId); showToast(t("toastFollowing"), "success", "user-plus"); }
     });
   }
 
@@ -59,6 +61,7 @@ export default function QuestionCard({ question }: Props) {
         Animated.spring(scaleLike, { toValue: 1, useNativeDriver: true }),
       ]).start();
       toggleLike(question.id);
+      showToast(liked ? t("toastUnliked") : t("toastLiked"), "success", "heart");
     });
   }
 

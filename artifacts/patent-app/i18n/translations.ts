@@ -66,7 +66,10 @@ export type TKeys =
   | "signIn" | "signInRequired" | "signInSubtitle"
   | "signInWithGoogle" | "signInWithFacebook"
   | "orContinue" | "continueWithoutAccount" | "authLegal"
-  | "logOut" | "loggedInAs";
+  | "logOut" | "loggedInAs"
+  | "toastLiked" | "toastUnliked" | "toastSaved" | "toastUnsaved"
+  | "toastFollowing" | "toastUnfollowed" | "toastVotedWorked" | "toastVotedDidnt"
+  | "toastCommentAdded" | "toastPostPublished";
 
 export type Translations = Record<TKeys, string>;
 
@@ -106,6 +109,11 @@ const t: Record<string, Translations> = {
     orContinue: "או", continueWithoutAccount: "המשך בלי חשבון",
     authLegal: "בהתחברות אתה מסכים לתנאי השימוש ומדיניות הפרטיות",
     logOut: "התנתק", loggedInAs: "מחובר כ",
+    toastLiked: "אהבת!", toastUnliked: "הסרת אהבה",
+    toastSaved: "נשמר לאוסף!", toastUnsaved: "הוסר מהאוסף",
+    toastFollowing: "עוקב עכשיו!", toastUnfollowed: "הפסקת לעקוב",
+    toastVotedWorked: "הצבעת: עבד!", toastVotedDidnt: "הצבעת: לא עבד",
+    toastCommentAdded: "התגובה נוספה!", toastPostPublished: "הפוסט פורסם!",
   },
   en: {
     appName: "Patent",
@@ -142,6 +150,11 @@ const t: Record<string, Translations> = {
     orContinue: "or", continueWithoutAccount: "Continue without account",
     authLegal: "By signing in you agree to our Terms of Service and Privacy Policy",
     logOut: "Log Out", loggedInAs: "Logged in as",
+    toastLiked: "Liked!", toastUnliked: "Unliked",
+    toastSaved: "Saved!", toastUnsaved: "Removed from saved",
+    toastFollowing: "Now following!", toastUnfollowed: "Unfollowed",
+    toastVotedWorked: "Voted: Worked!", toastVotedDidnt: "Voted: Didn't work",
+    toastCommentAdded: "Comment added!", toastPostPublished: "Post published!",
   },
   ar: {
     appName: "Patent",

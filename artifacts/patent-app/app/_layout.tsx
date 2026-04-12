@@ -14,11 +14,13 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import LoginModal from "@/components/LoginModal";
+import Toast from "@/components/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider } from "@/context/AuthContext";
 import { FeedProvider } from "@/context/FeedContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { SocialProvider } from "@/context/SocialContext";
+import { ToastProvider } from "@/context/ToastContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -61,18 +63,21 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <SettingsProvider>
-            <AuthProvider>
-              <SocialProvider>
-                <FeedProvider>
-                  <GestureHandlerRootView style={{ flex: 1 }}>
-                    <KeyboardProvider>
-                      <RootLayoutNav />
-                      <LoginModal />
-                    </KeyboardProvider>
-                  </GestureHandlerRootView>
-                </FeedProvider>
-              </SocialProvider>
-            </AuthProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <SocialProvider>
+                  <FeedProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <KeyboardProvider>
+                        <RootLayoutNav />
+                        <LoginModal />
+                        <Toast />
+                      </KeyboardProvider>
+                    </GestureHandlerRootView>
+                  </FeedProvider>
+                </SocialProvider>
+              </AuthProvider>
+            </ToastProvider>
           </SettingsProvider>
         </QueryClientProvider>
       </ErrorBoundary>

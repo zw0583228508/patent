@@ -16,6 +16,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useSocial } from "@/context/SocialContext";
+import { useToast } from "@/context/ToastContext";
 import { Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -32,6 +33,7 @@ export default function TipCard({ tip }: Props) {
   const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
   const { follow, unfollow, isFollowing } = useSocial();
   const { requireAuth } = useAuth();
+  const { showToast } = useToast();
   const myVote = votes[tip.id];
   const saved = savedIds.has(tip.id);
   const liked = likedIds.has(tip.id);
@@ -56,9 +58,11 @@ export default function TipCard({ tip }: Props) {
 
   function handleVote(v: "worked" | "didnt") {
     requireAuth(() => {
+      if (myVote === v) return;
       if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       animatePress(v === "worked" ? scaleWorked : scaleNot);
       vote(tip.id, v);
+      showToast(v === "worked" ? t("toastVotedWorked") : t("toastVotedDidnt"), "success", v === "worked" ? "thumbs-up" : "thumbs-down");
     });
   }
 
@@ -67,14 +71,15 @@ export default function TipCard({ tip }: Props) {
       if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       animatePress(scaleLike);
       toggleLike(tip.id);
+      showToast(liked ? t("toastUnliked") : t("toastLiked"), "success", "heart");
     });
   }
 
   function handleFollow() {
     requireAuth(() => {
       if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      if (following) unfollow(tip.userId);
-      else follow(tip.userId);
+      if (following) { unfollow(tip.userId); showToast(t("toastUnfollowed"), "info", "user-minus"); }
+      else { follow(tip.userId); showToast(t("toastFollowing"), "success", "user-plus"); }
     });
   }
 
@@ -208,7 +213,7 @@ export default function TipCard({ tip }: Props) {
 
           <TouchableOpacity
             style={styles.actionBtn}
-            onPress={() => requireAuth(() => toggleSave(tip.id))}
+            onPress={() => requireAuth(() => { toggleSave(tip.id); showToast(saved ? t("toastUnsaved") : t("toastSaved"), "success", "bookmark"); })}
             testID={`save-${tip.id}`}
           >
             <Feather name="bookmark" size={16} color={saved ? colors.primary : colors.mutedForeground} />

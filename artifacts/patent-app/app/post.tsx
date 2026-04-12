@@ -16,6 +16,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useToast } from "@/context/ToastContext";
 import { CATEGORIES } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -24,6 +25,7 @@ export default function PostScreen() {
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useSettings();
   const { addPost } = useFeed();
+  const { showToast } = useToast();
   const params = useLocalSearchParams<{ type?: string }>();
   const [postType, setPostType] = useState<"tip" | "question">(
     params.type === "question" ? "question" : "tip"
@@ -70,6 +72,7 @@ export default function PostScreen() {
     if (Platform.OS !== "web")
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     addPost(postType, text.trim(), category);
+    showToast(t("toastPostPublished"), "success", "zap");
     router.back();
   }
 
