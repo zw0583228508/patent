@@ -1,0 +1,263 @@
+export type Lang = {
+  code: string;
+  nativeName: string;
+  flag: string;
+  rtl?: boolean;
+};
+
+export const LANGUAGES: Lang[] = [
+  { code: "he", nativeName: "עברית", flag: "🇮🇱", rtl: true },
+  { code: "en", nativeName: "English", flag: "🇬🇧" },
+  { code: "ar", nativeName: "العربية", flag: "🇸🇦", rtl: true },
+  { code: "es", nativeName: "Español", flag: "🇪🇸" },
+  { code: "fr", nativeName: "Français", flag: "🇫🇷" },
+  { code: "de", nativeName: "Deutsch", flag: "🇩🇪" },
+  { code: "ru", nativeName: "Русский", flag: "🇷🇺" },
+  { code: "zh", nativeName: "中文简体", flag: "🇨🇳" },
+  { code: "ja", nativeName: "日本語", flag: "🇯🇵" },
+  { code: "pt", nativeName: "Português", flag: "🇧🇷" },
+  { code: "it", nativeName: "Italiano", flag: "🇮🇹" },
+  { code: "ko", nativeName: "한국어", flag: "🇰🇷" },
+  { code: "tr", nativeName: "Türkçe", flag: "🇹🇷" },
+  { code: "pl", nativeName: "Polski", flag: "🇵🇱" },
+  { code: "nl", nativeName: "Nederlands", flag: "🇳🇱" },
+  { code: "hi", nativeName: "हिन्दी", flag: "🇮🇳" },
+  { code: "uk", nativeName: "Українська", flag: "🇺🇦" },
+  { code: "ro", nativeName: "Română", flag: "🇷🇴" },
+  { code: "sv", nativeName: "Svenska", flag: "🇸🇪" },
+  { code: "da", nativeName: "Dansk", flag: "🇩🇰" },
+  { code: "fi", nativeName: "Suomi", flag: "🇫🇮" },
+  { code: "nb", nativeName: "Norsk", flag: "🇳🇴" },
+  { code: "cs", nativeName: "Čeština", flag: "🇨🇿" },
+  { code: "hu", nativeName: "Magyar", flag: "🇭🇺" },
+  { code: "el", nativeName: "Ελληνικά", flag: "🇬🇷" },
+  { code: "th", nativeName: "ภาษาไทย", flag: "🇹🇭" },
+  { code: "id", nativeName: "Bahasa Indonesia", flag: "🇮🇩" },
+  { code: "ms", nativeName: "Bahasa Melayu", flag: "🇲🇾" },
+  { code: "fa", nativeName: "فارسی", flag: "🇮🇷", rtl: true },
+  { code: "ur", nativeName: "اردو", flag: "🇵🇰", rtl: true },
+];
+
+export type TKeys =
+  | "appName"
+  | "all" | "home" | "food" | "business" | "health" | "tech" | "nature"
+  | "workedForMe" | "didntWork" | "lookingForSolution"
+  | "trending" | "trendingDesc" | "number1Today" | "rank"
+  | "search" | "searchPlaceholder" | "noResults" | "chooseCategory"
+  | "profile" | "myTips" | "saved" | "noTips" | "noSaved"
+  | "tips" | "verifiedExpert"
+  | "post" | "newTip" | "shareKnowledge" | "requestSolution" | "communityHelps" | "publish"
+  | "category"
+  | "comments" | "answers" | "answer" | "noComments" | "noAnswers"
+  | "addComment" | "writeAnswer" | "sendComment"
+  | "settings" | "language" | "languageTitle" | "searchLanguage"
+  | "notifications" | "notifyAnswers" | "notifyAnswersDesc"
+  | "notifyComments" | "notifyCommentsDesc"
+  | "notifyTopics" | "notifyTopicsDesc"
+  | "topicsTitle" | "topicsSubtitle"
+  | "nothingInCategory" | "feedEmpty"
+  | "notificationsTitle" | "done" | "settingsTitle";
+
+export type Translations = Record<TKeys, string>;
+
+const t: Record<string, Translations> = {
+  he: {
+    appName: "Patent",
+    all: "הכל", home: "בית", food: "אוכל", business: "עסקים",
+    health: "בריאות", tech: "טכנולוגיה", nature: "טבע",
+    workedForMe: "עבד לי", didntWork: "לא עבד", lookingForSolution: "מחפש פתרון",
+    trending: "טרנד", trendingDesc: "הכי מאומת ב-24 שעות", number1Today: "מספר 1 היום", rank: "#",
+    search: "חיפוש", searchPlaceholder: "חפש טיפים ושאלות...", noResults: "אין תוצאות עבור", chooseCategory: "בחר קטגוריה לחיפוש",
+    profile: "פרופיל", myTips: "הטיפים שלי", saved: "שמורים", noTips: "עדיין לא פרסמת טיפים", noSaved: "לא שמרת טיפים עדיין",
+    tips: "טיפים", verifiedExpert: "מומחה מאומת",
+    post: "פרסם", newTip: "טיפ חדש", shareKnowledge: "שתף ידע שגילית", requestSolution: "בקש פתרון", communityHelps: "הקהילה תעזור", publish: "פרסם",
+    category: "קטגוריה",
+    comments: "תגובות", answers: "תשובות", answer: "ענה", noComments: "אין תגובות עדיין — היה הראשון!", noAnswers: "אין תשובות עדיין — היה הראשון!",
+    addComment: "הוסף תגובה...", writeAnswer: "כתוב תשובה...", sendComment: "שלח",
+    settings: "הגדרות", language: "שפה", languageTitle: "בחר שפה", searchLanguage: "חפש שפה...",
+    notifications: "התראות", notifyAnswers: "תשובות לשאלות שלי", notifyAnswersDesc: "קבל התראה כשמישהו עונה לבקשת הטיפ שלך",
+    notifyComments: "תגובות על הפוסטים שלי", notifyCommentsDesc: "קבל התראה כשמישהו מגיב על הטיפים שלך",
+    notifyTopics: "נושאים מעניינים", notifyTopicsDesc: "קבל עדכון על טיפים חדשים בנושאים שבחרת",
+    topicsTitle: "נושאים מועדפים", topicsSubtitle: "בחר אילו נושאים מעניינים אותך",
+    nothingInCategory: "אין טיפים בקטגוריה זו", feedEmpty: "הפיד ריק",
+    notificationsTitle: "הגדרות התראות", done: "סיום", settingsTitle: "הגדרות",
+  },
+  en: {
+    appName: "Patent",
+    all: "All", home: "Home", food: "Food", business: "Business",
+    health: "Health", tech: "Technology", nature: "Nature",
+    workedForMe: "Worked", didntWork: "Didn't Work", lookingForSolution: "Seeking Solution",
+    trending: "Trending", trendingDesc: "Most verified in 24h", number1Today: "#1 Today", rank: "#",
+    search: "Search", searchPlaceholder: "Search tips & questions...", noResults: "No results for", chooseCategory: "Choose a category to search",
+    profile: "Profile", myTips: "My Tips", saved: "Saved", noTips: "No tips posted yet", noSaved: "No saved tips yet",
+    tips: "Tips", verifiedExpert: "Verified Expert",
+    post: "Post", newTip: "New Tip", shareKnowledge: "Share knowledge you discovered", requestSolution: "Request a Solution", communityHelps: "The community will help", publish: "Publish",
+    category: "Category",
+    comments: "Comments", answers: "Answers", answer: "Answer", noComments: "No comments yet — be first!", noAnswers: "No answers yet — be first!",
+    addComment: "Add a comment...", writeAnswer: "Write an answer...", sendComment: "Send",
+    settings: "Settings", language: "Language", languageTitle: "Choose Language", searchLanguage: "Search language...",
+    notifications: "Notifications", notifyAnswers: "Answers to my questions", notifyAnswersDesc: "Get notified when someone answers your tip request",
+    notifyComments: "Comments on my posts", notifyCommentsDesc: "Get notified when someone comments on your tips",
+    notifyTopics: "Topics I follow", notifyTopicsDesc: "Get updates on new tips in your chosen topics",
+    topicsTitle: "Favorite Topics", topicsSubtitle: "Choose which topics interest you",
+    nothingInCategory: "No tips in this category", feedEmpty: "Feed is empty",
+    notificationsTitle: "Notification Settings", done: "Done", settingsTitle: "Settings",
+  },
+  ar: {
+    appName: "Patent",
+    all: "الكل", home: "المنزل", food: "طعام", business: "أعمال",
+    health: "صحة", tech: "تكنولوجيا", nature: "طبيعة",
+    workedForMe: "نجح معي", didntWork: "لم ينجح", lookingForSolution: "يبحث عن حل",
+    trending: "رائج", trendingDesc: "الأكثر تحققاً في 24 ساعة", number1Today: "الأول اليوم", rank: "#",
+    search: "بحث", searchPlaceholder: "ابحث عن نصائح وأسئلة...", noResults: "لا نتائج لـ", chooseCategory: "اختر فئة للبحث",
+    profile: "الملف الشخصي", myTips: "نصائحي", saved: "المحفوظة", noTips: "لم تنشر أي نصائح بعد", noSaved: "لا توجد نصائح محفوظة",
+    tips: "نصائح", verifiedExpert: "خبير موثق",
+    post: "نشر", newTip: "نصيحة جديدة", shareKnowledge: "شارك معرفتك", requestSolution: "اطلب حلاً", communityHelps: "المجتمع سيساعد", publish: "نشر",
+    category: "فئة",
+    comments: "تعليقات", answers: "إجابات", answer: "أجب", noComments: "لا تعليقات بعد — كن الأول!", noAnswers: "لا إجابات بعد — كن الأول!",
+    addComment: "أضف تعليقاً...", writeAnswer: "اكتب إجابة...", sendComment: "إرسال",
+    settings: "الإعدادات", language: "اللغة", languageTitle: "اختر اللغة", searchLanguage: "ابحث عن لغة...",
+    notifications: "الإشعارات", notifyAnswers: "إجابات على أسئلتي", notifyAnswersDesc: "احصل على إشعار عندما يجيب أحدهم على طلبك",
+    notifyComments: "تعليقات على منشوراتي", notifyCommentsDesc: "احصل على إشعار عندما يعلق أحدهم على نصائحك",
+    notifyTopics: "المواضيع التي أتابعها", notifyTopicsDesc: "احصل على تحديثات لنصائح جديدة في مواضيعك",
+    topicsTitle: "المواضيع المفضلة", topicsSubtitle: "اختر المواضيع التي تهمك",
+    nothingInCategory: "لا نصائح في هذه الفئة", feedEmpty: "الخلاصة فارغة",
+    notificationsTitle: "إعدادات الإشعارات", done: "تم", settingsTitle: "الإعدادات",
+  },
+  es: {
+    appName: "Patent",
+    all: "Todo", home: "Hogar", food: "Comida", business: "Negocios",
+    health: "Salud", tech: "Tecnología", nature: "Naturaleza",
+    workedForMe: "Me funcionó", didntWork: "No funcionó", lookingForSolution: "Busca solución",
+    trending: "Tendencia", trendingDesc: "Más verificado en 24h", number1Today: "#1 Hoy", rank: "#",
+    search: "Buscar", searchPlaceholder: "Buscar consejos y preguntas...", noResults: "Sin resultados para", chooseCategory: "Elige una categoría",
+    profile: "Perfil", myTips: "Mis Consejos", saved: "Guardados", noTips: "Aún no has publicado consejos", noSaved: "Sin consejos guardados",
+    tips: "Consejos", verifiedExpert: "Experto Verificado",
+    post: "Publicar", newTip: "Nuevo Consejo", shareKnowledge: "Comparte tu conocimiento", requestSolution: "Pedir Solución", communityHelps: "La comunidad ayudará", publish: "Publicar",
+    category: "Categoría",
+    comments: "Comentarios", answers: "Respuestas", answer: "Responder", noComments: "Sin comentarios aún — ¡sé el primero!", noAnswers: "Sin respuestas aún — ¡sé el primero!",
+    addComment: "Añadir comentario...", writeAnswer: "Escribe una respuesta...", sendComment: "Enviar",
+    settings: "Ajustes", language: "Idioma", languageTitle: "Elegir Idioma", searchLanguage: "Buscar idioma...",
+    notifications: "Notificaciones", notifyAnswers: "Respuestas a mis preguntas", notifyAnswersDesc: "Recibe un aviso cuando alguien responde tu consulta",
+    notifyComments: "Comentarios en mis publicaciones", notifyCommentsDesc: "Recibe un aviso cuando alguien comenta tus consejos",
+    notifyTopics: "Temas que sigo", notifyTopicsDesc: "Recibe actualizaciones de nuevos consejos en tus temas",
+    topicsTitle: "Temas Favoritos", topicsSubtitle: "Elige qué temas te interesan",
+    nothingInCategory: "No hay consejos en esta categoría", feedEmpty: "El feed está vacío",
+    notificationsTitle: "Ajustes de notificaciones", done: "Listo", settingsTitle: "Ajustes",
+  },
+  fr: {
+    appName: "Patent",
+    all: "Tout", home: "Maison", food: "Nourriture", business: "Affaires",
+    health: "Santé", tech: "Technologie", nature: "Nature",
+    workedForMe: "Ça a marché", didntWork: "N'a pas marché", lookingForSolution: "Cherche solution",
+    trending: "Tendance", trendingDesc: "Plus vérifié en 24h", number1Today: "N°1 Aujourd'hui", rank: "#",
+    search: "Recherche", searchPlaceholder: "Chercher conseils et questions...", noResults: "Aucun résultat pour", chooseCategory: "Choisir une catégorie",
+    profile: "Profil", myTips: "Mes Conseils", saved: "Enregistrés", noTips: "Aucun conseil publié encore", noSaved: "Aucun conseil enregistré",
+    tips: "Conseils", verifiedExpert: "Expert Vérifié",
+    post: "Publier", newTip: "Nouveau Conseil", shareKnowledge: "Partagez vos connaissances", requestSolution: "Demander solution", communityHelps: "La communauté aidera", publish: "Publier",
+    category: "Catégorie",
+    comments: "Commentaires", answers: "Réponses", answer: "Répondre", noComments: "Aucun commentaire encore — soyez le premier !", noAnswers: "Aucune réponse encore — soyez le premier !",
+    addComment: "Ajouter un commentaire...", writeAnswer: "Écrire une réponse...", sendComment: "Envoyer",
+    settings: "Paramètres", language: "Langue", languageTitle: "Choisir la langue", searchLanguage: "Rechercher langue...",
+    notifications: "Notifications", notifyAnswers: "Réponses à mes questions", notifyAnswersDesc: "Recevoir une notif quand quelqu'un répond à votre demande",
+    notifyComments: "Commentaires sur mes posts", notifyCommentsDesc: "Recevoir une notif quand quelqu'un commente vos conseils",
+    notifyTopics: "Sujets suivis", notifyTopicsDesc: "Recevez des mises à jour sur vos sujets favoris",
+    topicsTitle: "Sujets Favoris", topicsSubtitle: "Choisissez les sujets qui vous intéressent",
+    nothingInCategory: "Aucun conseil dans cette catégorie", feedEmpty: "Le fil est vide",
+    notificationsTitle: "Paramètres de notifications", done: "Terminé", settingsTitle: "Paramètres",
+  },
+  de: {
+    appName: "Patent",
+    all: "Alle", home: "Zuhause", food: "Essen", business: "Business",
+    health: "Gesundheit", tech: "Technologie", nature: "Natur",
+    workedForMe: "Hat geholfen", didntWork: "Hat nicht geholfen", lookingForSolution: "Suche Lösung",
+    trending: "Trending", trendingDesc: "Am meisten bestätigt in 24h", number1Today: "#1 Heute", rank: "#",
+    search: "Suchen", searchPlaceholder: "Tipps & Fragen suchen...", noResults: "Keine Ergebnisse für", chooseCategory: "Kategorie wählen",
+    profile: "Profil", myTips: "Meine Tipps", saved: "Gespeichert", noTips: "Noch keine Tipps veröffentlicht", noSaved: "Keine gespeicherten Tipps",
+    tips: "Tipps", verifiedExpert: "Verifizierter Experte",
+    post: "Posten", newTip: "Neuer Tipp", shareKnowledge: "Teile dein Wissen", requestSolution: "Lösung anfragen", communityHelps: "Die Community hilft", publish: "Veröffentlichen",
+    category: "Kategorie",
+    comments: "Kommentare", answers: "Antworten", answer: "Antworten", noComments: "Noch keine Kommentare — sei der Erste!", noAnswers: "Noch keine Antworten — sei der Erste!",
+    addComment: "Kommentar hinzufügen...", writeAnswer: "Antwort schreiben...", sendComment: "Senden",
+    settings: "Einstellungen", language: "Sprache", languageTitle: "Sprache wählen", searchLanguage: "Sprache suchen...",
+    notifications: "Benachrichtigungen", notifyAnswers: "Antworten auf meine Fragen", notifyAnswersDesc: "Benachrichtigung wenn jemand auf deinen Tipp antwortet",
+    notifyComments: "Kommentare auf meine Posts", notifyCommentsDesc: "Benachrichtigung wenn jemand deine Tipps kommentiert",
+    notifyTopics: "Verfolgte Themen", notifyTopicsDesc: "Updates zu neuen Tipps in deinen Themen erhalten",
+    topicsTitle: "Lieblingsthemen", topicsSubtitle: "Wähle welche Themen dich interessieren",
+    nothingInCategory: "Keine Tipps in dieser Kategorie", feedEmpty: "Feed ist leer",
+    notificationsTitle: "Benachrichtigungseinstellungen", done: "Fertig", settingsTitle: "Einstellungen",
+  },
+  ru: {
+    appName: "Patent",
+    all: "Все", home: "Дом", food: "Еда", business: "Бизнес",
+    health: "Здоровье", tech: "Технологии", nature: "Природа",
+    workedForMe: "Помогло", didntWork: "Не помогло", lookingForSolution: "Ищет решение",
+    trending: "Тренды", trendingDesc: "Наиболее подтверждено за 24ч", number1Today: "#1 Сегодня", rank: "#",
+    search: "Поиск", searchPlaceholder: "Поиск советов и вопросов...", noResults: "Нет результатов для", chooseCategory: "Выберите категорию",
+    profile: "Профиль", myTips: "Мои советы", saved: "Сохранённые", noTips: "Ещё нет советов", noSaved: "Нет сохранённых советов",
+    tips: "Советы", verifiedExpert: "Проверенный эксперт",
+    post: "Опубликовать", newTip: "Новый совет", shareKnowledge: "Поделитесь знаниями", requestSolution: "Запросить решение", communityHelps: "Сообщество поможет", publish: "Опубликовать",
+    category: "Категория",
+    comments: "Комментарии", answers: "Ответы", answer: "Ответить", noComments: "Нет комментариев — будь первым!", noAnswers: "Нет ответов — будь первым!",
+    addComment: "Добавить комментарий...", writeAnswer: "Написать ответ...", sendComment: "Отправить",
+    settings: "Настройки", language: "Язык", languageTitle: "Выбрать язык", searchLanguage: "Поиск языка...",
+    notifications: "Уведомления", notifyAnswers: "Ответы на мои вопросы", notifyAnswersDesc: "Уведомление когда кто-то отвечает на ваш запрос",
+    notifyComments: "Комментарии к моим постам", notifyCommentsDesc: "Уведомление когда кто-то комментирует ваши советы",
+    notifyTopics: "Отслеживаемые темы", notifyTopicsDesc: "Обновления о новых советах по выбранным темам",
+    topicsTitle: "Любимые темы", topicsSubtitle: "Выберите интересующие вас темы",
+    nothingInCategory: "В этой категории нет советов", feedEmpty: "Лента пуста",
+    notificationsTitle: "Настройки уведомлений", done: "Готово", settingsTitle: "Настройки",
+  },
+  zh: {
+    appName: "Patent",
+    all: "全部", home: "家庭", food: "美食", business: "商务",
+    health: "健康", tech: "科技", nature: "自然",
+    workedForMe: "有效", didntWork: "无效", lookingForSolution: "寻找解决方案",
+    trending: "热门", trendingDesc: "24小时内验证最多", number1Today: "今日第一", rank: "#",
+    search: "搜索", searchPlaceholder: "搜索提示和问题...", noResults: "无结果：", chooseCategory: "选择分类",
+    profile: "个人", myTips: "我的提示", saved: "已保存", noTips: "尚未发布任何提示", noSaved: "无已保存提示",
+    tips: "提示", verifiedExpert: "认证专家",
+    post: "发布", newTip: "新提示", shareKnowledge: "分享您的知识", requestSolution: "请求解决方案", communityHelps: "社区将帮助您", publish: "发布",
+    category: "分类",
+    comments: "评论", answers: "回答", answer: "回答", noComments: "暂无评论 — 成为第一个！", noAnswers: "暂无回答 — 成为第一个！",
+    addComment: "添加评论...", writeAnswer: "写回答...", sendComment: "发送",
+    settings: "设置", language: "语言", languageTitle: "选择语言", searchLanguage: "搜索语言...",
+    notifications: "通知", notifyAnswers: "我的问题的回答", notifyAnswersDesc: "有人回答您的请求时收到通知",
+    notifyComments: "对我帖子的评论", notifyCommentsDesc: "有人评论您的提示时收到通知",
+    notifyTopics: "关注的话题", notifyTopicsDesc: "在您选择的话题中收到新提示更新",
+    topicsTitle: "喜爱的话题", topicsSubtitle: "选择您感兴趣的话题",
+    nothingInCategory: "此分类无提示", feedEmpty: "动态为空",
+    notificationsTitle: "通知设置", done: "完成", settingsTitle: "设置",
+  },
+  pt: {
+    appName: "Patent",
+    all: "Tudo", home: "Casa", food: "Comida", business: "Negócios",
+    health: "Saúde", tech: "Tecnologia", nature: "Natureza",
+    workedForMe: "Funcionou", didntWork: "Não funcionou", lookingForSolution: "Procura solução",
+    trending: "Tendência", trendingDesc: "Mais verificado em 24h", number1Today: "#1 Hoje", rank: "#",
+    search: "Pesquisar", searchPlaceholder: "Pesquisar dicas e perguntas...", noResults: "Sem resultados para", chooseCategory: "Escolha uma categoria",
+    profile: "Perfil", myTips: "Minhas Dicas", saved: "Salvos", noTips: "Nenhuma dica publicada ainda", noSaved: "Nenhuma dica salva",
+    tips: "Dicas", verifiedExpert: "Especialista Verificado",
+    post: "Publicar", newTip: "Nova Dica", shareKnowledge: "Compartilhe seu conhecimento", requestSolution: "Pedir Solução", communityHelps: "A comunidade ajudará", publish: "Publicar",
+    category: "Categoria",
+    comments: "Comentários", answers: "Respostas", answer: "Responder", noComments: "Sem comentários ainda — seja o primeiro!", noAnswers: "Sem respostas ainda — seja o primeiro!",
+    addComment: "Adicionar comentário...", writeAnswer: "Escrever resposta...", sendComment: "Enviar",
+    settings: "Configurações", language: "Idioma", languageTitle: "Escolher Idioma", searchLanguage: "Pesquisar idioma...",
+    notifications: "Notificações", notifyAnswers: "Respostas às minhas perguntas", notifyAnswersDesc: "Receba notificação quando alguém responder sua pergunta",
+    notifyComments: "Comentários nos meus posts", notifyCommentsDesc: "Receba notificação quando comentarem suas dicas",
+    notifyTopics: "Tópicos que sigo", notifyTopicsDesc: "Receba atualizações de novas dicas nos tópicos escolhidos",
+    topicsTitle: "Tópicos Favoritos", topicsSubtitle: "Escolha quais tópicos lhe interessam",
+    nothingInCategory: "Nenhuma dica nesta categoria", feedEmpty: "O feed está vazio",
+    notificationsTitle: "Configurações de notificações", done: "Concluído", settingsTitle: "Configurações",
+  },
+};
+
+const fallback = t["en"];
+
+export function getTranslations(langCode: string): Translations {
+  return t[langCode] ?? fallback;
+}
+
+export function isRTLLang(langCode: string): boolean {
+  return LANGUAGES.find((l) => l.code === langCode)?.rtl === true;
+}

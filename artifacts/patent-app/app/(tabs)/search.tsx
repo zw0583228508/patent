@@ -1,45 +1,37 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
-import {
-  FlatList,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import QuestionCard from "@/components/QuestionCard";
 import TipCard from "@/components/TipCard";
+import { useSettings } from "@/context/SettingsContext";
 import { CATEGORIES, FEED_ITEMS, FeedItem, Question, Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
 const categoryIcons: Record<string, string> = {
-  all: "grid",
-  home: "home",
-  food: "coffee",
-  business: "briefcase",
-  health: "heart",
-  tech: "cpu",
-  nature: "sun",
+  all: "grid", home: "home", food: "coffee", business: "briefcase",
+  health: "heart", tech: "cpu", nature: "sun",
 };
 
 export default function SearchScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
+  const { t, isRTL, langCode } = useSettings();
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState("all");
   const topPad = Platform.OS === "web" ? 67 : insets.top;
+  const dir = isRTL ? "row-reverse" : "row";
+  const textAlign = isRTL ? "right" : "left";
+
+  const categoryLabels: Record<string, string> = {
+    all: t("all"), home: t("home"), food: t("food"),
+    business: t("business"), health: t("health"), tech: t("tech"), nature: t("nature"),
+  };
 
   const categoryMap: Record<string, string> = {
-    home: "בית",
-    food: "אוכל",
-    business: "עסקים",
-    health: "בריאות",
-    tech: "טכנולוגיה",
-    nature: "טבע",
+    home: "בית", food: "אוכל", business: "עסקים",
+    health: "בריאות", tech: "טכנולוגיה", nature: "טבע",
   };
 
   const filtered = FEED_ITEMS.filter((item) => {
@@ -56,19 +48,19 @@ export default function SearchScreen() {
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 8 }]}>
-        <View style={[styles.searchBar, { backgroundColor: colors.surface2, borderColor: colors.border }]}>
-          <Feather name="search" size={16} color={colors.mutedForeground} style={{ marginLeft: 10 }} />
+        <View style={[styles.searchBar, { backgroundColor: colors.surface2, borderColor: colors.border, flexDirection: dir }]}>
+          <Feather name="search" size={16} color={colors.mutedForeground} style={{ marginHorizontal: 10 }} />
           <TextInput
             style={[styles.input, { color: colors.foreground }]}
-            placeholder="חפש טיפים ושאלות..."
+            placeholder={t("searchPlaceholder")}
             placeholderTextColor={colors.mutedForeground}
             value={query}
             onChangeText={setQuery}
-            textAlign="right"
+            textAlign={textAlign as any}
             testID="search-input"
           />
           {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery("")} style={{ marginRight: 10 }}>
+            <TouchableOpacity onPress={() => setQuery("")} style={{ marginHorizontal: 10 }}>
               <Feather name="x" size={16} color={colors.mutedForeground} />
             </TouchableOpacity>
           )}
@@ -83,6 +75,7 @@ export default function SearchScreen() {
           <TouchableOpacity
             style={[
               styles.catBtn,
+              { flexDirection: dir },
               selected === cat.id
                 ? { backgroundColor: "rgba(240,224,64,0.15)", borderColor: "rgba(240,224,64,0.5)" }
                 : { backgroundColor: colors.surface2, borderColor: colors.border },
@@ -92,11 +85,11 @@ export default function SearchScreen() {
           >
             <Feather name={categoryIcons[cat.id] as any} size={14} color={selected === cat.id ? colors.primary : colors.mutedForeground} />
             <Text style={[styles.catBtnText, { color: selected === cat.id ? colors.primary : colors.mutedForeground }]}>
-              {cat.label}
+              {categoryLabels[cat.id] ?? cat.label}
             </Text>
           </TouchableOpacity>
         )}
-        contentContainerStyle={styles.catList}
+        contentContainerStyle={[styles.catList, { flexDirection: isRTL ? "row-reverse" : "row" }]}
         showsHorizontalScrollIndicator={false}
         style={styles.catScroll}
       />
@@ -111,8 +104,8 @@ export default function SearchScreen() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Feather name="search" size={36} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              {query ? `אין תוצאות עבור "${query}"` : "בחר קטגוריה לחיפוש"}
+            <Text style={[styles.emptyText, { color: colors.mutedForeground, textAlign: "center" }]}>
+              {query ? `${t("noResults")} "${query}"` : t("chooseCategory")}
             </Text>
           </View>
         }
@@ -122,62 +115,15 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1c1c27",
-  },
-  searchBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    borderRadius: 12,
-    borderWidth: 1,
-    height: 44,
-  },
-  input: {
-    flex: 1,
-    fontSize: 15,
-    paddingHorizontal: 8,
-  },
-  catScroll: {
-    maxHeight: 56,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1c1c27",
-  },
-  catList: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
-    flexDirection: "row-reverse",
-  },
-  catBtn: {
-    flexDirection: "row-reverse",
-    alignItems: "center",
-    borderRadius: 100,
-    borderWidth: 1,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    gap: 6,
-  },
-  catBtnText: {
-    fontSize: 13,
-    fontWeight: "500" as const,
-  },
-  list: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
-  },
-  empty: {
-    alignItems: "center",
-    paddingTop: 60,
-    gap: 12,
-  },
-  emptyText: {
-    fontSize: 15,
-    textAlign: "center",
-  },
+  container: { flex: 1 },
+  header: { paddingHorizontal: 16, paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: "#1c1c27" },
+  searchBar: { alignItems: "center", borderRadius: 12, borderWidth: 1, height: 44 },
+  input: { flex: 1, fontSize: 15, paddingHorizontal: 4 },
+  catScroll: { maxHeight: 56, borderBottomWidth: 1, borderBottomColor: "#1c1c27" },
+  catList: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
+  catBtn: { alignItems: "center", borderRadius: 100, borderWidth: 1, paddingHorizontal: 12, paddingVertical: 5, gap: 6 },
+  catBtnText: { fontSize: 13, fontWeight: "500" as const },
+  list: { paddingHorizontal: 16, paddingTop: 12 },
+  empty: { alignItems: "center", paddingTop: 60, gap: 12 },
+  emptyText: { fontSize: 15 },
 });

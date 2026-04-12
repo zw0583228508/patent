@@ -14,6 +14,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { FeedProvider } from "@/context/FeedContext";
+import { SettingsProvider } from "@/context/SettingsContext";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,13 +24,8 @@ function RootLayoutNav() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="post"
-        options={{
-          presentation: "modal",
-          headerShown: false,
-        }}
-      />
+      <Stack.Screen name="post" options={{ presentation: "modal", headerShown: false }} />
+      <Stack.Screen name="settings" options={{ presentation: "modal", headerShown: false }} />
     </Stack>
   );
 }
@@ -53,13 +49,15 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
-          <FeedProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <KeyboardProvider>
-                <RootLayoutNav />
-              </KeyboardProvider>
-            </GestureHandlerRootView>
-          </FeedProvider>
+          <SettingsProvider>
+            <FeedProvider>
+              <GestureHandlerRootView style={{ flex: 1 }}>
+                <KeyboardProvider>
+                  <RootLayoutNav />
+                </KeyboardProvider>
+              </GestureHandlerRootView>
+            </FeedProvider>
+          </SettingsProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

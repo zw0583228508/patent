@@ -12,6 +12,7 @@ import {
 
 import CommentsSheet from "@/components/CommentsSheet";
 import { useFeed } from "@/context/FeedContext";
+import { useSettings } from "@/context/SettingsContext";
 import { Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -24,6 +25,7 @@ type Props = { tip: Tip };
 
 export default function TipCard({ tip }: Props) {
   const colors = useColors();
+  const { t, isRTL } = useSettings();
   const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
   const myVote = votes[tip.id];
   const saved = savedIds.has(tip.id);
@@ -101,7 +103,7 @@ export default function TipCard({ tip }: Props) {
             >
               <Feather name="check" size={12} color={colors.accentGreen} />
               <Text style={[styles.voteBtnText, { color: colors.accentGreen }]}>
-                עבד לי ({formatCount(workedCount)})
+                {t("workedForMe")} ({formatCount(workedCount)})
               </Text>
             </TouchableOpacity>
           </Animated.View>
@@ -120,7 +122,7 @@ export default function TipCard({ tip }: Props) {
             >
               <Feather name="x" size={12} color={colors.accentRed} />
               <Text style={[styles.voteBtnText, { color: colors.accentRed }]}>
-                לא עבד ({formatCount(didntCount)})
+                {t("didntWork")} ({formatCount(didntCount)})
               </Text>
             </TouchableOpacity>
           </Animated.View>
