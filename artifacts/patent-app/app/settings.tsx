@@ -261,7 +261,7 @@ export default function SettingsScreen() {
         <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <TouchableOpacity
             style={[styles.row, { flexDirection: dir, borderWidth: 0, borderRadius: 0 }]}
-            onPress={() => router.push("/privacy")}
+            onPress={() => router.push("/privacy?section=privacy" as any)}
             testID="privacy-policy-btn"
           >
             <View style={[styles.topicIconWrap, { backgroundColor: colors.surface2 }]}>
@@ -278,7 +278,7 @@ export default function SettingsScreen() {
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
           <TouchableOpacity
             style={[styles.row, { flexDirection: dir, borderWidth: 0, borderRadius: 0 }]}
-            onPress={() => router.push("/privacy")}
+            onPress={() => router.push("/privacy?section=terms" as any)}
             testID="terms-btn"
           >
             <View style={[styles.topicIconWrap, { backgroundColor: colors.surface2 }]}>

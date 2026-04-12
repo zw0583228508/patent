@@ -1,0 +1,129 @@
+Privacy Policy — Patent
+Last updated: April 2026
+
+1. General
+Windot ("we", "the Company") operates the Patent application ("the App"). This Privacy Policy explains how we collect, use, and protect your information.
+
+2. Information We Collect
+Information you provide us:
+
+Full name and email address — when registering with Google
+Username of your choice
+Content you publish (tips, questions, comments)
+Images you upload to posts
+
+Information collected automatically:
+
+Anonymous usage data via Google Analytics (such as screens viewed, session duration, device type, language)
+Google Analytics does not personally identify you and does not link your actions to your identity
+
+Information we do not collect:
+
+Geographic location
+Contacts
+Payment information
+
+
+3. How We Use Your Information
+We use your information solely for the following purposes:
+
+Operating the app and enabling login
+Displaying your feed, profile, and content
+Sending Push notifications you have opted into
+Improving user experience based on anonymous data
+
+
+4. Sharing Information with Third Parties
+We do not sell, rent, or trade your information. Your data may be stored or transferred only to the following third parties:
+ProviderPurposePrivacy PolicyGoogle OAuthAuthentication and loginGoogle PolicyGoogle AnalyticsAnonymous usage analysisGoogle PolicyGoogle Cloud StorageStorage of uploaded imagesGoogle PolicyExpo (Push Notifications)Sending notificationsExpo Policy
+
+5. Data Storage and Security
+
+Your data is stored on secure servers
+We use encrypted JWT tokens for authentication
+We are not responsible for security breaches originating from third parties
+
+
+6. Your Rights
+You have the right to:
+
+Know what data is stored about you
+Request correction of inaccurate information
+Request deletion of your account and all associated data
+Object to the processing of your information
+
+To exercise your rights, contact us at: windot100@gmail.com
+
+7. Children
+The app is open to all ages. We do not knowingly collect information from children under the age of 13 beyond what is required to operate an account. If you are a parent and believe your child has provided information without your consent — contact us and we will delete it immediately.
+
+8. Changes to This Policy
+We may update this policy from time to time. Material changes will be announced within the app. Continued use after publication constitutes acceptance of the changes.
+
+9. Contact
+Windot
+Israel
+windot100@gmail.com
+
+
+Terms of Service — Patent
+Last updated: April 2026
+
+1. Acceptance of Terms
+Using the Patent app constitutes full agreement to the terms detailed below. If you do not agree — please discontinue use.
+
+2. The Service
+Patent is a social platform for sharing tips, advice, and questions between users. Windot provides the platform only and is not responsible for content published by users.
+
+3. User Account
+
+You must provide accurate information when registering
+You are responsible for keeping your account credentials secure
+Creating multiple accounts for the same user is prohibited
+Windot may suspend or delete any account that violates these terms
+
+
+4. Content Rules — What Is and Isn't Allowed
+Allowed:
+
+Sharing tips and advice from personal experience
+Asking questions and providing answers
+Respectful criticism and substantive discussion
+
+Strictly prohibited:
+
+Offensive, racist, threatening, or degrading content
+Harassment of other users
+Publishing personal information of others without their consent
+Spam, unauthorized advertising, or disguised promotional content
+Content that infringes copyright
+Medical, legal, or financial information presented as binding professional advice
+Pornographic or explicitly sexual content
+
+
+5. Intellectual Property
+Your content: You retain full ownership of the content you publish. By publishing content you grant Windot a non-exclusive, royalty-free license to display and distribute your content within the app.
+Our content: The logo, design, code, and app interface are the exclusive property of Windot and are protected by copyright.
+
+6. Limitation of Liability
+
+Tips and advice in the app do not constitute professional advice of any kind
+Windot is not liable for any damage caused by acting on content published in the app
+The service is provided "AS IS" without any warranty of continuous availability
+Windot is not responsible for content published by users
+
+
+7. Content Removal and Account Suspension
+Windot reserves the right to remove any content and suspend any account, at its sole discretion, in cases of violation of these terms — without prior notice.
+
+8. Changes to the Service
+Windot may modify, suspend, or discontinue the service at any time. You shall have no claim against Windot for any such changes.
+
+9. Governing Law and Jurisdiction
+These terms are subject exclusively to Israeli law. Exclusive jurisdiction is granted to the competent courts in the Tel Aviv district.
+
+10. Contact
+For any questions or inquiries regarding these terms:
+Windot
+Israel
+windot100@gmail.com
