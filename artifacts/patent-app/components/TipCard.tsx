@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React from "react";
+import React, { useState } from "react";
 import {
   Animated,
   Platform,
@@ -10,6 +10,7 @@ import {
   View,
 } from "react-native";
 
+import CommentsSheet from "@/components/CommentsSheet";
 import { useFeed } from "@/context/FeedContext";
 import { Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
@@ -23,16 +24,20 @@ type Props = { tip: Tip };
 
 export default function TipCard({ tip }: Props) {
   const colors = useColors();
-  const { votes, savedIds, vote, toggleSave } = useFeed();
+  const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
   const myVote = votes[tip.id];
   const saved = savedIds.has(tip.id);
+  const liked = likedIds.has(tip.id);
+  const [showComments, setShowComments] = useState(false);
+
   const scaleWorked = React.useRef(new Animated.Value(1)).current;
   const scaleNot = React.useRef(new Animated.Value(1)).current;
+  const scaleLike = React.useRef(new Animated.Value(1)).current;
 
   function animatePress(anim: Animated.Value) {
     Animated.sequence([
-      Animated.timing(anim, { toValue: 0.92, duration: 80, useNativeDriver: true }),
-      Animated.timing(anim, { toValue: 1, duration: 80, useNativeDriver: true }),
+      Animated.timing(anim, { toValue: 0.88, duration: 70, useNativeDriver: true }),
+      Animated.spring(anim, { toValue: 1, useNativeDriver: true }),
     ]).start();
   }
 
@@ -42,91 +47,127 @@ export default function TipCard({ tip }: Props) {
     vote(tip.id, v);
   }
 
+  function handleLike() {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    animatePress(scaleLike);
+    toggleLike(tip.id);
+  }
+
   const workedCount = tip.workedCount + (myVote === "worked" ? 1 : 0);
   const didntCount = tip.didntWorkCount + (myVote === "didnt" ? 1 : 0);
+  const likeCount = tip.likeCount + (liked ? 1 : 0);
+  const commentCount = (comments[tip.id] ?? []).length || tip.commentCount;
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} testID={`tip-card-${tip.id}`}>
-      {tip.isTrending && (
-        <View style={[styles.trendingBadge, { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)" }]}>
-          <Feather name="trending-up" size={10} color={colors.primary} />
-          <Text style={[styles.trendingText, { color: colors.primary }]}>טרנד</Text>
-        </View>
-      )}
+    <>
+      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} testID={`tip-card-${tip.id}`}>
+        {tip.isTrending && (
+          <View style={[styles.trendingBadge, { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)" }]}>
+            <Feather name="trending-up" size={10} color={colors.primary} />
+            <Text style={[styles.trendingText, { color: colors.primary }]}>טרנד</Text>
+          </View>
+        )}
 
-      <View style={styles.header}>
-        <View style={[styles.avatar, { backgroundColor: tip.avatarGradient[0] }]}>
-          <Text style={styles.avatarText}>{tip.initials}</Text>
-        </View>
-        <View style={styles.meta}>
-          <Text style={[styles.author, { color: colors.foreground }]}>{tip.author}</Text>
-          <View style={styles.catRow}>
-            <Feather name={tip.categoryIcon as any} size={10} color={colors.mutedForeground} />
-            <Text style={[styles.category, { color: colors.mutedForeground }]}> {tip.category}</Text>
+        <View style={styles.header}>
+          <View style={[styles.avatar, { backgroundColor: tip.avatarGradient[0] }]}>
+            <Text style={styles.avatarText}>{tip.initials}</Text>
+          </View>
+          <View style={styles.meta}>
+            <Text style={[styles.author, { color: colors.foreground }]}>{tip.author}</Text>
+            <View style={styles.catRow}>
+              <Feather name={tip.categoryIcon as any} size={10} color={colors.mutedForeground} />
+              <Text style={[styles.category, { color: colors.mutedForeground }]}> {tip.category}</Text>
+            </View>
+          </View>
+          <View style={[styles.trustBadge, { backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
+            <Text style={[styles.trustText, { color: colors.accentGreen }]}>{tip.trustScore}%</Text>
           </View>
         </View>
-        <View style={[styles.trustBadge, { backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
-          <Text style={[styles.trustText, { color: colors.accentGreen }]}>{tip.trustScore}%</Text>
+
+        <Text style={[styles.tipText, { color: "#c0c0d8" }]}>{tip.text}</Text>
+
+        <View style={styles.voteRow}>
+          <Animated.View style={{ flex: 1, transform: [{ scale: scaleWorked }] }}>
+            <TouchableOpacity
+              style={[
+                styles.voteBtn,
+                {
+                  backgroundColor: myVote === "worked" ? "rgba(64,224,64,0.22)" : "rgba(64,224,64,0.10)",
+                  borderColor: myVote === "worked" ? "rgba(64,224,64,0.6)" : "rgba(64,224,64,0.25)",
+                },
+              ]}
+              onPress={() => handleVote("worked")}
+              testID={`vote-worked-${tip.id}`}
+            >
+              <Feather name="check" size={12} color={colors.accentGreen} />
+              <Text style={[styles.voteBtnText, { color: colors.accentGreen }]}>
+                עבד לי ({formatCount(workedCount)})
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View style={{ flex: 1, transform: [{ scale: scaleNot }] }}>
+            <TouchableOpacity
+              style={[
+                styles.voteBtn,
+                {
+                  backgroundColor: myVote === "didnt" ? "rgba(240,64,64,0.2)" : "rgba(240,64,64,0.08)",
+                  borderColor: myVote === "didnt" ? "rgba(240,64,64,0.6)" : "rgba(240,64,64,0.2)",
+                },
+              ]}
+              onPress={() => handleVote("didnt")}
+              testID={`vote-didnt-${tip.id}`}
+            >
+              <Feather name="x" size={12} color={colors.accentRed} />
+              <Text style={[styles.voteBtnText, { color: colors.accentRed }]}>
+                לא עבד ({formatCount(didntCount)})
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+
+        <View style={styles.actionsRow}>
+          <Animated.View style={{ transform: [{ scale: scaleLike }] }}>
+            <TouchableOpacity
+              style={styles.actionBtn}
+              onPress={handleLike}
+              testID={`like-${tip.id}`}
+            >
+              <Feather name="heart" size={16} color={liked ? colors.accentPink : colors.mutedForeground} />
+              <Text style={[styles.actionCount, { color: liked ? colors.accentPink : colors.mutedForeground }]}>
+                {formatCount(likeCount)}
+              </Text>
+            </TouchableOpacity>
+          </Animated.View>
+
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => setShowComments(true)}
+            testID={`comments-${tip.id}`}
+          >
+            <Feather name="message-circle" size={16} color={colors.mutedForeground} />
+            <Text style={[styles.actionCount, { color: colors.mutedForeground }]}>{commentCount}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={() => toggleSave(tip.id)}
+            testID={`save-${tip.id}`}
+          >
+            <Feather name="bookmark" size={16} color={saved ? colors.primary : colors.mutedForeground} />
+          </TouchableOpacity>
+
+          <Text style={[styles.timestamp, { color: "#4a4a6a" }]}>{tip.timestamp}</Text>
         </View>
       </View>
 
-      <Text style={[styles.tipText, { color: "#c0c0d8" }]}>{tip.text}</Text>
-
-      <View style={styles.actions}>
-        <Animated.View style={{ flex: 1, transform: [{ scale: scaleWorked }] }}>
-          <TouchableOpacity
-            style={[
-              styles.voteBtn,
-              {
-                backgroundColor: myVote === "worked" ? "rgba(64,224,64,0.22)" : "rgba(64,224,64,0.10)",
-                borderColor: myVote === "worked" ? "rgba(64,224,64,0.6)" : "rgba(64,224,64,0.25)",
-              },
-            ]}
-            onPress={() => handleVote("worked")}
-            testID={`vote-worked-${tip.id}`}
-          >
-            <Feather name="check" size={12} color={colors.accentGreen} />
-            <Text style={[styles.voteBtnText, { color: colors.accentGreen }]}>
-              עבד לי ({formatCount(workedCount)})
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <Animated.View style={{ flex: 1, transform: [{ scale: scaleNot }] }}>
-          <TouchableOpacity
-            style={[
-              styles.voteBtn,
-              {
-                backgroundColor: myVote === "didnt" ? "rgba(240,64,64,0.2)" : "rgba(240,64,64,0.08)",
-                borderColor: myVote === "didnt" ? "rgba(240,64,64,0.6)" : "rgba(240,64,64,0.2)",
-              },
-            ]}
-            onPress={() => handleVote("didnt")}
-            testID={`vote-didnt-${tip.id}`}
-          >
-            <Feather name="x" size={12} color={colors.accentRed} />
-            <Text style={[styles.voteBtnText, { color: colors.accentRed }]}>
-              לא עבד ({formatCount(didntCount)})
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-
-        <TouchableOpacity
-          style={styles.iconBtn}
-          onPress={() => toggleSave(tip.id)}
-          testID={`save-${tip.id}`}
-        >
-          <Feather name={saved ? "bookmark" : "bookmark"} size={16} color={saved ? colors.primary : colors.mutedForeground} />
-        </TouchableOpacity>
-
-        <View style={styles.commentRow}>
-          <Feather name="message-circle" size={14} color={colors.mutedForeground} />
-          <Text style={[styles.commentCount, { color: colors.mutedForeground }]}>{tip.commentCount}</Text>
-        </View>
-      </View>
-
-      <Text style={[styles.timestamp, { color: "#4a4a6a" }]}>{tip.timestamp}</Text>
-    </View>
+      <CommentsSheet
+        visible={showComments}
+        itemId={tip.id}
+        itemText={tip.text}
+        onClose={() => setShowComments(false)}
+      />
+    </>
   );
 }
 
@@ -199,13 +240,13 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 12,
+    marginBottom: 10,
     textAlign: "right",
   },
-  actions: {
+  voteRow: {
     flexDirection: "row-reverse",
     gap: 8,
-    alignItems: "center",
+    marginBottom: 10,
   },
   voteBtn: {
     flexDirection: "row-reverse",
@@ -220,20 +261,21 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500" as const,
   },
-  iconBtn: {
-    padding: 4,
-  },
-  commentRow: {
-    flexDirection: "row",
+  actionsRow: {
+    flexDirection: "row-reverse",
     alignItems: "center",
-    gap: 3,
+    gap: 16,
   },
-  commentCount: {
-    fontSize: 12,
+  actionBtn: {
+    flexDirection: "row-reverse",
+    alignItems: "center",
+    gap: 4,
+  },
+  actionCount: {
+    fontSize: 13,
   },
   timestamp: {
     fontSize: 10,
-    marginTop: 8,
-    textAlign: "right",
+    marginLeft: "auto",
   },
 });
