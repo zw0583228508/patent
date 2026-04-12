@@ -41,7 +41,14 @@ function parseToken(token: string): { userId: string; name: string; email: strin
   try {
     const parts = token.split(".");
     if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    const base64 = parts[1].replace(/-/g, "+").replace(/_/g, "/");
+    const jsonString = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map((c) => "%" + c.charCodeAt(0).toString(16).padStart(2, "0"))
+        .join("")
+    );
+    const payload = JSON.parse(jsonString);
     if (!payload.userId || !payload.name || !payload.email) return null;
     return payload;
   } catch {

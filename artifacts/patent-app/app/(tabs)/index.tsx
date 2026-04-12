@@ -138,6 +138,9 @@ export default function FeedScreen() {
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push("/(tabs)/search")} testID="search-btn">
             <Feather name="search" size={22} color={colors.foreground} />
           </TouchableOpacity>
+          <TouchableOpacity style={styles.iconBtn} onPress={() => router.push("/settings")} testID="settings-btn">
+            <Feather name="settings" size={22} color={colors.foreground} />
+          </TouchableOpacity>
         </View>
       </View>
 

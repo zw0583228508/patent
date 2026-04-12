@@ -93,15 +93,8 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
           <View>
-            <View style={[styles.header, { paddingTop: topPad + 8, flexDirection: dir }]}>
+            <View style={[styles.header, { paddingTop: topPad + 8 }]}>
               <Text style={[styles.headerTitle, { color: colors.foreground }]}>{t("profile")}</Text>
-              <TouchableOpacity
-                style={styles.settingsBtn}
-                onPress={() => router.push("/settings")}
-                testID="settings-btn"
-              >
-                <Feather name="settings" size={22} color={colors.foreground} />
-              </TouchableOpacity>
             </View>
 
             <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
@@ -212,7 +205,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1, borderBottomColor: "#1c1c27",
   },
   headerTitle: { fontSize: 22, fontWeight: "800" as const },
-  settingsBtn: { padding: 6 },
   profileCard: {
     alignItems: "center", borderWidth: 1, borderRadius: 20,
     margin: 16, padding: 24, gap: 8,
