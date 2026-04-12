@@ -1,4 +1,4 @@
-import { useSSO, useSignIn } from "@clerk/expo";
+import { useSSO } from "@clerk/expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useRef, useState } from "react";
@@ -28,7 +28,6 @@ export default function LoginModal() {
   const { t } = useSettings();
   const { showLoginModal, setShowLoginModal } = useAuth();
   const { startSSOFlow } = useSSO();
-  const { signIn, setActive, isLoaded: signInLoaded } = useSignIn();
   const [loading, setLoading] = useState<LoadingProvider>(null);
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
@@ -79,16 +78,10 @@ export default function LoginModal() {
     }, SSO_TIMEOUT_MS);
 
     try {
-      if (Platform.OS === "web" && signInLoaded && signIn) {
-        await signIn.authenticateWithRedirect({
-          strategy: "oauth_google",
-          redirectUrl: window.location.origin + "/__clerk_cb",
-          redirectUrlComplete: window.location.origin + window.location.pathname,
-        });
-        return;
-      }
+      const redirectUrl = Platform.OS === "web"
+        ? (typeof window !== "undefined" ? window.location.origin + "/sso-callback" : "https://localhost/sso-callback")
+        : AuthSession.makeRedirectUri();
 
-      const redirectUrl = AuthSession.makeRedirectUri();
       const result = await startSSOFlow({ strategy: "oauth_google", redirectUrl });
 
       if (abortedRef.current) return;
@@ -97,14 +90,9 @@ export default function LoginModal() {
         await result.setActive!({ session: result.createdSessionId });
         resetLoading();
         setShowLoginModal(false);
-      } else if (result.signUp?.status === "missing_requirements") {
-        await result.signUp.update({});
-        if (result.signUp.status === "complete") {
-          resetLoading();
-          setShowLoginModal(false);
-        } else {
-          resetLoading("נדרש מידע נוסף. נסה שוב.");
-        }
+      } else if (result.signUp?.status === "missing_requirements" || result.signUp?.status === "complete") {
+        resetLoading();
+        setShowLoginModal(false);
       } else {
         resetLoading("ההתחברות לא הושלמה. נסה שוב.");
       }

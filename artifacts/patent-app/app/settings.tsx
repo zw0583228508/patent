@@ -99,7 +99,7 @@ export default function SettingsScreen() {
                   {lang.nativeName}
                 </Text>
                 {selected && (
-                  <Feather name="check" size={18} color={colors.primary} style={{ marginLeft: "auto", marginRight: isRTL ? "auto" : 0, marginLeft: isRTL ? 0 : "auto" }} />
+                  <Feather name="check" size={18} color={colors.primary} style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }} />
                 )}
               </TouchableOpacity>
             );

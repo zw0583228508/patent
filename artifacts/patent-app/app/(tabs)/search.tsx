@@ -35,8 +35,8 @@ export default function SearchScreen() {
   };
 
   const filtered = FEED_ITEMS.filter((item) => {
-    const matchCat = selected === "all" || item.category === (categoryMap[selected] ?? selected);
-    const matchQ = !query.trim() || item.text.includes(query.trim());
+    const matchCat = selected === "all" || item.categoryId === selected;
+    const matchQ = !query.trim() || item.text.toLowerCase().includes(query.trim().toLowerCase());
     return matchCat && matchQ;
   });
 

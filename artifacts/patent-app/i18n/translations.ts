@@ -73,7 +73,7 @@ export type TKeys =
 
 export type Translations = Record<TKeys, string>;
 
-const t: Record<string, Translations> = {
+const t: Record<string, Partial<Translations>> = {
   he: {
     appName: "Patent",
     all: "הכל", home: "בית", food: "אוכל", business: "עסקים",
@@ -319,7 +319,7 @@ const t: Record<string, Translations> = {
   },
 };
 
-const fallback = t["en"];
+const fallback = t["en"] as Translations;
 
 export function getTranslations(langCode: string): Translations {
   if (!t[langCode]) return fallback;
