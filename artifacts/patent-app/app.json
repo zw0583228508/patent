@@ -27,7 +27,8 @@
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.READ_EXTERNAL_STORAGE",
-        "android.permission.WRITE_EXTERNAL_STORAGE"
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.RECORD_AUDIO"
       ]
     },
     "web": {
@@ -56,8 +57,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "patent-app"
+        "projectId": "bdc9e4f5-79f9-4750-95cb-111d6f8334e7"
       }
-    }
+    },
+    "owner": "zev-ynrych"
   }
 }
