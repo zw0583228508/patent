@@ -44,7 +44,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const insets = useSafeAreaInsets();
   const { comments, addComment } = useFeed();
   const { t, isRTL } = useSettings();
-  const { requireAuth } = useAuth();
+  const { isLoggedIn, setShowLoginModal } = useAuth();
   const { showToast } = useToast();
   const [text, setText] = useState("");
   const [media, setMedia] = useState<MediaAsset[]>([]);
@@ -71,13 +71,15 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
 
   function handleSubmit() {
     if (!text.trim() && media.length === 0) return;
-    requireAuth(() => {
-      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      addComment(itemId, text.trim());
-      setText("");
-      setMedia([]);
-      showToast(t("toastCommentAdded"), "success", "message-circle");
-    });
+    if (!isLoggedIn) {
+      setShowLoginModal(true);
+      return;
+    }
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    addComment(itemId, text.trim());
+    setText("");
+    setMedia([]);
+    showToast(t("toastCommentAdded"), "success", "message-circle");
   }
 
   function toggleCommentLike(commentId: string) {
@@ -141,9 +143,6 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
           styles.sheet,
           { backgroundColor: colors.surface, borderTopColor: colors.border, height: sheetHeight, transform: [{ translateY }] },
         ]}
-        // Capture ALL responder events so they don't reach the backdrop
-        onStartShouldSetResponder={() => false}
-        onMoveShouldSetResponder={() => false}
       >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
@@ -219,8 +218,8 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
 }
 
 const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.65)" },
-  sheet: { position: "absolute", bottom: 0, left: 0, right: 0, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1 },
+  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.65)", zIndex: 0 },
+  sheet: { position: "absolute", bottom: 0, left: 0, right: 0, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, zIndex: 1 },
   handle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginTop: 10, marginBottom: 4 },
   sheetHeader: { alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
   sheetTitle: { fontSize: 16, fontWeight: "700" as const },
