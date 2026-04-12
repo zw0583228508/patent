@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Router } from "express";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { db } from "../db";
-import { collections, collectionPosts, posts, users } from "../db/schema";
+import { collections, collectionPosts } from "../db/schema";
 import { requireAuth } from "../lib/authMiddleware";
 
 const router = Router();
@@ -167,19 +167,10 @@ router.get("/:id/posts", requireAuth, async (req, res) => {
 
     const rows = await db
       .select({
-        post: posts,
-        author: {
-          id: users.id,
-          name: users.name,
-          username: users.username,
-          avatarGradient: users.avatarGradient,
-          trustScore: users.trustScore,
-        },
+        postId: collectionPosts.postId,
         savedAt: collectionPosts.createdAt,
       })
       .from(collectionPosts)
-      .innerJoin(posts, eq(posts.id, collectionPosts.postId))
-      .innerJoin(users, eq(users.id, posts.authorId))
       .where(
         and(
           eq(collectionPosts.collectionId, req.params.id),
@@ -190,7 +181,7 @@ router.get("/:id/posts", requireAuth, async (req, res) => {
       .limit(limit)
       .offset(offset);
 
-    res.json({ collection: col[0], data: rows, hasMore: rows.length === limit });
+    res.json({ collection: col[0], postIds: rows.map((r) => r.postId), hasMore: rows.length === limit });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Failed to fetch collection posts" });

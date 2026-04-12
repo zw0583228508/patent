@@ -151,7 +151,7 @@ export const api = {
       const query = new URLSearchParams();
       if (params?.limit != null) query.set("limit", String(params.limit));
       if (params?.offset != null) query.set("offset", String(params.offset));
-      return request<{ collection: ApiCollection; data: ApiCollectionPost[]; hasMore: boolean }>(`/collections/${id}/posts?${query}`);
+      return request<{ collection: ApiCollection; postIds: string[]; hasMore: boolean }>(`/collections/${id}/posts?${query}`);
     },
   },
 
