@@ -4,8 +4,6 @@ import {
   Inter_700Bold,
   useFonts,
 } from "@expo-google-fonts/inter";
-import { ClerkLoaded, ClerkProvider } from "@clerk/expo";
-import { tokenCache } from "@clerk/expo/token-cache";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, router } from "expo-router";
@@ -30,8 +28,6 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
-
 function PushNotificationSetup() {
   const { user } = useAuth();
   usePushNotifications(user?.id ?? null);
@@ -53,7 +49,6 @@ function RootLayoutNav() {
       <Stack.Screen name="settings" options={{ presentation: "modal", headerShown: false }} />
       <Stack.Screen name="privacy" options={{ presentation: "modal", headerShown: false }} />
       <Stack.Screen name="notifications" options={{ headerShown: false }} />
-      <Stack.Screen name="sso-callback" options={{ headerShown: false }} />
       <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
     </Stack>
   );
@@ -75,34 +70,30 @@ export default function RootLayout() {
   if (!fontsLoaded && !fontError) return null;
 
   return (
-    <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <ClerkLoaded>
-        <SafeAreaProvider>
-          <ErrorBoundary>
-            <QueryClientProvider client={queryClient}>
-              <SettingsProvider>
-                <ToastProvider>
-                  <AuthProvider>
-                    <SocialProvider>
-                      <FeedProvider>
-                        <GestureHandlerRootView style={{ flex: 1 }}>
-                          <KeyboardProvider>
-                            <PushNotificationSetup />
-                            <RootLayoutNav />
-                            <LoginModal />
-                            <Toast />
-                            <OfflineBanner />
-                          </KeyboardProvider>
-                        </GestureHandlerRootView>
-                      </FeedProvider>
-                    </SocialProvider>
-                  </AuthProvider>
-                </ToastProvider>
-              </SettingsProvider>
-            </QueryClientProvider>
-          </ErrorBoundary>
-        </SafeAreaProvider>
-      </ClerkLoaded>
-    </ClerkProvider>
+    <SafeAreaProvider>
+      <ErrorBoundary>
+        <QueryClientProvider client={queryClient}>
+          <SettingsProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <SocialProvider>
+                  <FeedProvider>
+                    <GestureHandlerRootView style={{ flex: 1 }}>
+                      <KeyboardProvider>
+                        <PushNotificationSetup />
+                        <RootLayoutNav />
+                        <LoginModal />
+                        <Toast />
+                        <OfflineBanner />
+                      </KeyboardProvider>
+                    </GestureHandlerRootView>
+                  </FeedProvider>
+                </SocialProvider>
+              </AuthProvider>
+            </ToastProvider>
+          </SettingsProvider>
+        </QueryClientProvider>
+      </ErrorBoundary>
+    </SafeAreaProvider>
   );
 }

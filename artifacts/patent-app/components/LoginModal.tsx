@@ -1,4 +1,3 @@
-import { useSSO } from "@clerk/expo";
 import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useRef, useState } from "react";
@@ -16,24 +15,54 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useColors } from "@/hooks/useColors";
+import { api } from "@/utils/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
 const SSO_TIMEOUT_MS = 60_000;
+
+const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+
+const GOOGLE_DISCOVERY = {
+  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
+  tokenEndpoint: "https://oauth2.googleapis.com/token",
+};
+
+function getApiBase(): string {
+  if (Platform.OS === "web" && typeof window !== "undefined") {
+    return `${window.location.origin}/api-server/api`;
+  }
+  const domain = process.env.EXPO_PUBLIC_DOMAIN;
+  if (domain) return `https://${domain}/api-server/api`;
+  return "http://localhost:8080/api";
+}
 
 type LoadingProvider = "google" | null;
 
 export default function LoginModal() {
   const colors = useColors();
   const { t } = useSettings();
-  const { showLoginModal, setShowLoginModal } = useAuth();
-  const { startSSOFlow } = useSSO();
+  const { showLoginModal, setShowLoginModal, login } = useAuth();
   const [loading, setLoading] = useState<LoadingProvider>(null);
   const [error, setError] = useState<string | null>(null);
   const [showCancel, setShowCancel] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cancelRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortedRef = useRef(false);
+
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: "patent-app",
+    path: "auth/callback",
+  });
+
+  const [request, , promptAsync] = AuthSession.useAuthRequest(
+    {
+      clientId: GOOGLE_CLIENT_ID,
+      scopes: ["openid", "profile", "email"],
+      redirectUri,
+    },
+    GOOGLE_DISCOVERY
+  );
 
   function clearTimers() {
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
@@ -61,19 +90,58 @@ export default function LoginModal() {
   }, [showLoginModal]);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (Platform.OS !== "web" || typeof window === "undefined") return;
     function onMessage(e: MessageEvent) {
-      if (e.data?.type === "PATENT_SSO_DONE") {
+      if (e.data?.type === "PATENT_AUTH_DONE" && e.data?.token) {
+        login(e.data.token).catch(() => {});
         abortedRef.current = true;
         resetLoading();
-        setShowLoginModal(false);
+      } else if (e.data?.type === "PATENT_AUTH_ERROR") {
+        resetLoading(e.data.error ?? "Google login failed");
       }
     }
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, []);
+  }, [login]);
 
-  async function handleGoogle() {
+  async function handleGoogleWeb() {
+    abortedRef.current = false;
+    setLoading("google");
+    setError(null);
+    setShowCancel(false);
+
+    cancelRef.current = setTimeout(() => {
+      if (!abortedRef.current) setShowCancel(true);
+    }, 8_000);
+
+    timeoutRef.current = setTimeout(() => {
+      if (!abortedRef.current) {
+        abortedRef.current = true;
+        resetLoading("הניסיון לא הושלם. אנא נסה שוב.");
+      }
+    }, SSO_TIMEOUT_MS);
+
+    const origin = typeof window !== "undefined" ? window.location.origin : "";
+    const authUrl = `${getApiBase()}/auth/google?origin=${encodeURIComponent(origin)}`;
+    const popup = window.open(authUrl, "patent_google_auth", "width=500,height=650,scrollbars=yes,resizable=yes");
+
+    if (!popup) {
+      resetLoading("הדפדפן חסם את החלון. אפשר חלונות קופצים ונסה שוב.");
+      return;
+    }
+
+    const checkClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosed);
+        if (!abortedRef.current) {
+          abortedRef.current = true;
+          resetLoading();
+        }
+      }
+    }, 500);
+  }
+
+  async function handleGoogleNative() {
     abortedRef.current = false;
     setLoading("google");
     setError(null);
@@ -91,43 +159,36 @@ export default function LoginModal() {
     }, SSO_TIMEOUT_MS);
 
     try {
-      const redirectUrl = Platform.OS === "web"
-        ? (typeof window !== "undefined" ? window.location.origin + "/sso-callback" : "https://localhost/sso-callback")
-        : AuthSession.makeRedirectUri();
-
-      const result = await startSSOFlow({ strategy: "oauth_google", redirectUrl });
+      const result = await promptAsync();
 
       if (abortedRef.current) return;
 
-      if (result.createdSessionId) {
-        await result.setActive!({ session: result.createdSessionId });
+      if (result.type === "success" && result.params.access_token) {
+        const data = await api.auth.exchangeToken(result.params.access_token);
+        await login(data.token);
         resetLoading();
         setShowLoginModal(false);
-      } else if (
-        result.signUp?.status === "missing_requirements" ||
-        result.signUp?.status === "complete" ||
-        (result.signIn as any)?.status === "complete"
-      ) {
-        if (result.createdSessionId && result.setActive) {
-          await result.setActive({ session: result.createdSessionId });
-        }
-        resetLoading();
-        setShowLoginModal(false);
-      } else if (Platform.OS === "web") {
+      } else if (result.type === "success" && result.params.code) {
+        resetLoading("ניסיון נוסף הכרחי — הגדר מחדש את URI.");
+      } else if (result.type === "cancel" || result.type === "dismiss") {
         resetLoading();
       } else {
         resetLoading("ההתחברות לא הושלמה. נסה שוב.");
       }
     } catch (err: any) {
       if (abortedRef.current) return;
-      console.error("Google SSO error:", err);
-      const msg =
-        err?.message?.toLowerCase().includes("popup")
-          ? "הדפדפן חסם את החלון. אפשר חלונות קופצים ונסה שוב."
-          : err?.message?.toLowerCase().includes("network")
-          ? "בעיית רשת. בדוק חיבור לאינטרנט ונסה שוב."
-          : "שגיאה בהתחברות עם Google. נסה שוב.";
+      const msg = err?.message?.toLowerCase().includes("network")
+        ? "בעיית רשת. בדוק חיבור לאינטרנט ונסה שוב."
+        : "שגיאה בהתחברות עם Google. נסה שוב.";
       resetLoading(msg);
+    }
+  }
+
+  function handleGoogle() {
+    if (Platform.OS === "web") {
+      handleGoogleWeb();
+    } else {
+      handleGoogleNative();
     }
   }
 

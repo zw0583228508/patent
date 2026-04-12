@@ -11,13 +11,27 @@ function getBaseUrl() {
 
 const BASE_URL = getBaseUrl();
 
-async function request<T>(
-  path: string,
-  options?: RequestInit,
-): Promise<T> {
+let _authToken: string | null = null;
+
+export function setAuthToken(token: string | null) {
+  _authToken = token;
+}
+
+export function getAuthToken(): string | null {
+  return _authToken;
+}
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options?.headers as Record<string, string> | undefined),
+  };
+  if (_authToken) {
+    headers["Authorization"] = `Bearer ${_authToken}`;
+  }
   const response = await fetch(`${BASE_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...options?.headers },
     ...options,
+    headers,
   });
 
   if (!response.ok) {
@@ -29,6 +43,15 @@ async function request<T>(
 }
 
 export const api = {
+  auth: {
+    me: () => request<{ userId: string; name: string; email: string; picture: string | null }>("/auth/me"),
+    exchangeToken: (accessToken: string) =>
+      request<{ token: string; userId: string; name: string; email: string; picture?: string }>("/auth/google/token", {
+        method: "POST",
+        body: JSON.stringify({ accessToken }),
+      }),
+  },
+
   posts: {
     list: (params: { category?: string; type?: string; search?: string; limit?: number; offset?: number; userId?: string }) => {
       const query = new URLSearchParams();

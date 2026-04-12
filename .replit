@@ -37,3 +37,10 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+GOOGLE_CLIENT_ID = "988409821514-vfgc07trnbssm2sild94jd7ppo6m49ct.apps.googleusercontent.com"
+GOOGLE_CLIENT_SECRET = "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"
+EXPO_PUBLIC_GOOGLE_CLIENT_ID = "988409821514-vfgc07trnbssm2sild94jd7ppo6m49ct.apps.googleusercontent.com"

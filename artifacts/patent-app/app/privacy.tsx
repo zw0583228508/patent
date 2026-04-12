@@ -74,7 +74,7 @@ export default function PrivacyScreen() {
           <Para text="We implement appropriate technical and organizational measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction." />
 
           <Text style={[styles.subTitle, { color: colors.foreground }]}>Third-Party Services</Text>
-          <Para text="Our app uses Google Sign-In (Clerk) for authentication. By using these features, you also agree to the respective privacy policies of these third-party services." />
+          <Para text="Our app uses Google Sign-In for authentication. By using these features, you also agree to Google's privacy policy." />
           <Para text="Translation features are powered by Google Translate and MyMemory APIs. Content you translate may be processed by these services." />
 
           <Text style={[styles.subTitle, { color: colors.foreground }]}>Data Retention</Text>

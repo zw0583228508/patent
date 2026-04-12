@@ -1,6 +1,8 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
-import { useAuth as useClerkAuth, useUser } from "@clerk/expo";
-import { api } from "@/utils/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { api, setAuthToken } from "@/utils/api";
+
+const TOKEN_KEY = "@patent:auth_token";
 
 export type AuthUser = {
   id: string;
@@ -15,7 +17,9 @@ export type AuthUser = {
 type AuthContextType = {
   user: AuthUser | null;
   isLoggedIn: boolean;
-  logout: () => void;
+  isLoading: boolean;
+  login: (token: string) => Promise<void>;
+  logout: () => Promise<void>;
   showLoginModal: boolean;
   setShowLoginModal: (v: boolean) => void;
   requireAuth: (action: () => void) => void;
@@ -33,16 +37,58 @@ function getInitials(name: string): string {
     .toUpperCase();
 }
 
+function parseToken(token: string): { userId: string; name: string; email: string; picture?: string } | null {
+  try {
+    const parts = token.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")));
+    if (!payload.userId || !payload.name || !payload.email) return null;
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
+function tokenToUser(token: string): AuthUser | null {
+  const payload = parseToken(token);
+  if (!payload) return null;
+  return {
+    id: payload.userId,
+    name: payload.name,
+    email: payload.email,
+    initials: getInitials(payload.name),
+    avatarColor: "#4285F4",
+    avatarUrl: payload.picture,
+    provider: "google",
+  };
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const { isSignedIn, signOut, isLoaded } = useClerkAuth();
-  const { user: clerkUser } = useUser();
+  const [user, setUser] = useState<AuthUser | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const pendingAction = useRef<(() => void) | null>(null);
-  const prevSignedIn = useRef<boolean | null>(null);
+  const prevLoggedIn = useRef<boolean>(false);
 
   useEffect(() => {
-    if (!isLoaded) return;
-    if (prevSignedIn.current === false && isSignedIn === true) {
+    AsyncStorage.getItem(TOKEN_KEY).then((token) => {
+      if (token) {
+        const parsed = tokenToUser(token);
+        if (parsed) {
+          setAuthToken(token);
+          setUser(parsed);
+        } else {
+          AsyncStorage.removeItem(TOKEN_KEY);
+        }
+      }
+      setIsLoading(false);
+    });
+  }, []);
+
+  useEffect(() => {
+    const wasLoggedIn = prevLoggedIn.current;
+    const nowLoggedIn = !!user;
+    if (!wasLoggedIn && nowLoggedIn) {
       setShowLoginModal(false);
       if (pendingAction.current) {
         const action = pendingAction.current;
@@ -50,71 +96,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setTimeout(action, 200);
       }
     }
-    prevSignedIn.current = isSignedIn ?? false;
-  }, [isSignedIn, isLoaded]);
+    prevLoggedIn.current = nowLoggedIn;
+  }, [user]);
 
-  useEffect(() => {
-    if (!isLoaded || !isSignedIn || !clerkUser) return;
-    const name =
-      clerkUser.fullName ??
-      clerkUser.username ??
-      clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0] ??
-      "משתמש";
-    const username =
-      clerkUser.username ??
-      clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0]?.replace(/[^a-z0-9_]/gi, "_") ??
-      `user_${clerkUser.id.slice(-6)}`;
+  const login = useCallback(async (token: string) => {
+    const parsed = tokenToUser(token);
+    if (!parsed) throw new Error("Invalid auth token");
+    setAuthToken(token);
+    await AsyncStorage.setItem(TOKEN_KEY, token);
+    setUser(parsed);
+
     api.users.upsert({
-      id: clerkUser.id,
-      name,
-      username,
+      id: parsed.id,
+      name: parsed.name,
+      username: parsed.id.replace("google_", "").slice(0, 8),
       bio: "",
       avatarGradient: "primary",
     }).catch(() => {});
-  }, [isSignedIn, isLoaded, clerkUser?.id]);
+  }, []);
 
   const logout = useCallback(async () => {
-    await signOut();
-  }, [signOut]);
+    setAuthToken(null);
+    await AsyncStorage.removeItem(TOKEN_KEY);
+    setUser(null);
+  }, []);
 
   const requireAuth = useCallback(
     (action: () => void) => {
-      if (isSignedIn) {
+      if (user) {
         action();
       } else {
         pendingAction.current = action;
         setShowLoginModal(true);
       }
     },
-    [isSignedIn]
+    [user]
   );
-
-  const user: AuthUser | null = clerkUser
-    ? {
-        id: clerkUser.id,
-        name:
-          clerkUser.fullName ??
-          clerkUser.username ??
-          clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0] ??
-          "משתמש",
-        email: clerkUser.primaryEmailAddress?.emailAddress ?? "",
-        initials: getInitials(
-          clerkUser.fullName ??
-            clerkUser.username ??
-            clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0] ??
-            "U"
-        ),
-        avatarColor: "#4285F4",
-        avatarUrl: clerkUser.imageUrl,
-        provider: clerkUser.externalAccounts[0]?.provider ?? "google",
-      }
-    : null;
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isLoggedIn: !!isSignedIn,
+        isLoggedIn: !!user,
+        isLoading,
+        login,
         logout,
         showLoginModal,
         setShowLoginModal,
