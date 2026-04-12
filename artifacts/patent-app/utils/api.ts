@@ -78,6 +78,8 @@ export const api = {
       request<{ following: boolean }>(`/users/${id}/is-following/${targetId}`),
     getFollowers: (id: string) => request<ApiUser[]>(`/users/${id}/followers`),
     getFollowing: (id: string) => request<ApiUser[]>(`/users/${id}/following`),
+    savePushToken: (id: string, token: string) =>
+      request<{ success: boolean }>(`/users/${id}/push-token`, { method: "POST", body: JSON.stringify({ token }) }),
   },
 
   comments: {

@@ -20,7 +20,7 @@ import OfflineBanner from "@/components/OfflineBanner";
 import Toast from "@/components/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { usePushNotifications } from "@/hooks/usePushNotifications";
-import { AuthProvider } from "@/context/AuthContext";
+import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { FeedProvider } from "@/context/FeedContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { SocialProvider } from "@/context/SocialContext";
@@ -33,7 +33,8 @@ const queryClient = new QueryClient();
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
 
 function PushNotificationSetup() {
-  usePushNotifications();
+  const { user } = useAuth();
+  usePushNotifications(user?.id ?? null);
   return null;
 }
 

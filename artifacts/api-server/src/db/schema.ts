@@ -19,6 +19,8 @@ export const users = pgTable("users", {
   tipsCount: integer("tips_count").default(0),
   followersCount: integer("followers_count").default(0),
   followingCount: integer("following_count").default(0),
+  pushToken: text("push_token"),
+  pushTokenUpdatedAt: timestamp("push_token_updated_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

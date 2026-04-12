@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { desc, eq, sql } from "drizzle-orm";
 import { db, comments, posts, users } from "../db";
+import { sendPushToUser } from "../lib/pushNotifications";
 
 const router = Router();
 
@@ -39,6 +40,15 @@ router.post("/", async (req, res) => {
       .where(eq(users.id, authorId));
 
     res.status(201).json({ ...comment, author });
+
+    const [post] = await db.select({ authorId: posts.authorId, title: posts.title }).from(posts).where(eq(posts.id, postId));
+    if (post && post.authorId !== authorId) {
+      sendPushToUser(post.authorId, {
+        title: "💬 תגובה חדשה",
+        body: `${author?.name ?? "מישהו"} הגיב על הפוסט שלך: "${content.slice(0, 80)}"`,
+        data: { type: "comment", postId, commentId: id },
+      });
+    }
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create comment" });

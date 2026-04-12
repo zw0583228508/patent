@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
 import { db, users, posts, follows } from "../db";
+import { sendPushToUser } from "../lib/pushNotifications";
 
 const router = Router();
 
@@ -10,11 +11,7 @@ router.get("/", async (req, res) => {
     const list = await db
       .select()
       .from(users)
-      .where(
-        search
-          ? or(ilike(users.name, `%${search}%`), ilike(users.username, `%${search}%`))
-          : undefined,
-      )
+      .where(search ? or(ilike(users.name, `%${search}%`), ilike(users.username, `%${search}%`)) : undefined)
       .limit(parseInt(limit))
       .offset(parseInt(offset));
     res.json(list);
@@ -41,16 +38,30 @@ router.post("/upsert", async (req, res) => {
     const [user] = await db
       .insert(users)
       .values({ id, name, username, bio, avatarGradient, categoryId })
-      .onConflictDoUpdate({
-        target: users.id,
-        set: { name, bio, avatarGradient, categoryId },
-      })
+      .onConflictDoUpdate({ target: users.id, set: { name, bio, avatarGradient, categoryId } })
       .returning();
 
     res.json(user);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to upsert user" });
+  }
+});
+
+router.post("/:id/push-token", async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: "token required" });
+
+    await db
+      .update(users)
+      .set({ pushToken: token, pushTokenUpdatedAt: new Date() })
+      .where(eq(users.id, req.params.id));
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to save push token" });
   }
 });
 
@@ -102,10 +113,7 @@ router.post("/:id/follow", async (req, res) => {
     if (!followerId) return res.status(400).json({ error: "followerId required" });
     if (followerId === req.params.id) return res.status(400).json({ error: "Cannot follow yourself" });
 
-    const existing = await db
-      .select()
-      .from(follows)
-      .where(and(eq(follows.followerId, followerId), eq(follows.followingId, req.params.id)));
+    const existing = await db.select().from(follows).where(and(eq(follows.followerId, followerId), eq(follows.followingId, req.params.id)));
 
     if (existing.length > 0) {
       await db.delete(follows).where(and(eq(follows.followerId, followerId), eq(follows.followingId, req.params.id)));
@@ -118,6 +126,13 @@ router.post("/:id/follow", async (req, res) => {
     await db.update(users).set({ followersCount: sql`${users.followersCount} + 1` }).where(eq(users.id, req.params.id));
     await db.update(users).set({ followingCount: sql`${users.followingCount} + 1` }).where(eq(users.id, followerId));
     res.json({ following: true });
+
+    const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, followerId));
+    sendPushToUser(req.params.id, {
+      title: "👤 עוקב חדש",
+      body: `${actor?.name ?? "מישהו"} החל לעקוב אחרייך`,
+      data: { type: "follow", followerId },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to toggle follow" });
@@ -126,10 +141,7 @@ router.post("/:id/follow", async (req, res) => {
 
 router.get("/:id/is-following/:targetId", async (req, res) => {
   try {
-    const existing = await db
-      .select()
-      .from(follows)
-      .where(and(eq(follows.followerId, req.params.id), eq(follows.followingId, req.params.targetId)));
+    const existing = await db.select().from(follows).where(and(eq(follows.followerId, req.params.id), eq(follows.followingId, req.params.targetId)));
     res.json({ following: existing.length > 0 });
   } catch (err) {
     res.status(500).json({ error: "Failed to check follow" });
