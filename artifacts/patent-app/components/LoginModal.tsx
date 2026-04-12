@@ -60,6 +60,18 @@ export default function LoginModal() {
     }
   }, [showLoginModal]);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function onMessage(e: MessageEvent) {
+      if (e.data?.type === "PATENT_SSO_DONE") {
+        resetLoading();
+        setShowLoginModal(false);
+      }
+    }
+    window.addEventListener("message", onMessage);
+    return () => window.removeEventListener("message", onMessage);
+  }, []);
+
   async function handleGoogle() {
     abortedRef.current = false;
     setLoading("google");

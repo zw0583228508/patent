@@ -1,32 +1,36 @@
-import { useAuth } from "@clerk/expo";
 import * as WebBrowser from "expo-web-browser";
+import { useAuth } from "@clerk/expo";
 import { router } from "expo-router";
 import { useEffect, useRef } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Platform, View } from "react-native";
 
 WebBrowser.maybeCompleteAuthSession();
 
 export default function SSOCallbackScreen() {
   const { isLoaded, isSignedIn } = useAuth();
-  const navigated = useRef(false);
+  const handled = useRef(false);
 
   useEffect(() => {
-    if (!isLoaded || navigated.current) return;
+    if (handled.current) return;
 
-    if (isSignedIn) {
-      navigated.current = true;
-      router.replace("/(tabs)");
-      return;
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      if (window.opener) {
+        handled.current = true;
+        try {
+          window.opener.postMessage({ type: "PATENT_SSO_DONE" }, window.location.origin);
+        } catch {}
+        window.close();
+
+        setTimeout(() => {
+          router.replace("/(tabs)");
+        }, 500);
+        return;
+      }
     }
 
-    const timer = setTimeout(() => {
-      if (!navigated.current) {
-        navigated.current = true;
-        router.replace("/(tabs)");
-      }
-    }, 3000);
-
-    return () => clearTimeout(timer);
+    if (!isLoaded) return;
+    handled.current = true;
+    router.replace("/(tabs)");
   }, [isLoaded, isSignedIn]);
 
   return (
