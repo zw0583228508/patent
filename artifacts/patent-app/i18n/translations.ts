@@ -69,7 +69,11 @@ export type TKeys =
   | "logOut" | "loggedInAs"
   | "toastLiked" | "toastUnliked" | "toastSaved" | "toastUnsaved"
   | "toastFollowing" | "toastUnfollowed" | "toastVotedWorked" | "toastVotedDidnt"
-  | "toastCommentAdded" | "toastPostPublished";
+  | "toastCommentAdded" | "toastPostPublished"
+  | "share" | "viewProfile" | "loadMore" | "noMoreItems"
+  | "users" | "searchUsers" | "noUsersFound"
+  | "privacyPolicy" | "termsOfService" | "legalSection" | "aboutApp" | "appVersion"
+  | "userNotFound" | "tipsByUser";
 
 export type Translations = Record<TKeys, string>;
 
@@ -114,6 +118,12 @@ const t: Record<string, Partial<Translations>> = {
     toastFollowing: "עוקב עכשיו!", toastUnfollowed: "הפסקת לעקוב",
     toastVotedWorked: "הצבעת: עבד!", toastVotedDidnt: "הצבעת: לא עבד",
     toastCommentAdded: "התגובה נוספה!", toastPostPublished: "הפוסט פורסם!",
+    share: "שתף", viewProfile: "צפה בפרופיל",
+    loadMore: "טען עוד", noMoreItems: "הגעת לסוף הפיד",
+    users: "משתמשים", searchUsers: "חפש משתמשים...", noUsersFound: "לא נמצאו משתמשים",
+    privacyPolicy: "מדיניות פרטיות", termsOfService: "תנאי שימוש",
+    legalSection: "משפטי", aboutApp: "אודות Patent", appVersion: "גרסה",
+    userNotFound: "משתמש לא נמצא", tipsByUser: "טיפים",
   },
   en: {
     appName: "Patent",
@@ -155,6 +165,12 @@ const t: Record<string, Partial<Translations>> = {
     toastFollowing: "Now following!", toastUnfollowed: "Unfollowed",
     toastVotedWorked: "Voted: Worked!", toastVotedDidnt: "Voted: Didn't work",
     toastCommentAdded: "Comment added!", toastPostPublished: "Post published!",
+    share: "Share", viewProfile: "View Profile",
+    loadMore: "Load More", noMoreItems: "You've reached the end",
+    users: "Users", searchUsers: "Search users...", noUsersFound: "No users found",
+    privacyPolicy: "Privacy Policy", termsOfService: "Terms of Service",
+    legalSection: "Legal", aboutApp: "About Patent", appVersion: "Version",
+    userNotFound: "User not found", tipsByUser: "Tips",
   },
   ar: {
     appName: "Patent",
@@ -178,6 +194,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "لا نصائح في هذه الفئة", feedEmpty: "الخلاصة فارغة",
     notificationsTitle: "إعدادات الإشعارات", done: "تم", settingsTitle: "الإعدادات",
     translate: "ترجم", showOriginal: "الأصل", translating: "جاري الترجمة...", translateError: "فشل الترجمة",
+    share: "مشاركة", viewProfile: "عرض الملف", loadMore: "تحميل المزيد", noMoreItems: "لا مزيد من العناصر",
+    users: "المستخدمون", searchUsers: "بحث عن مستخدمين...", noUsersFound: "لم يتم العثور على مستخدمين",
+    privacyPolicy: "سياسة الخصوصية", termsOfService: "شروط الخدمة",
+    legalSection: "قانوني", aboutApp: "حول Patent", appVersion: "الإصدار",
+    userNotFound: "المستخدم غير موجود", tipsByUser: "نصائح",
   },
   es: {
     appName: "Patent",
@@ -201,6 +222,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "No hay consejos en esta categoría", feedEmpty: "El feed está vacío",
     notificationsTitle: "Ajustes de notificaciones", done: "Listo", settingsTitle: "Ajustes",
     translate: "Traducir", showOriginal: "Original", translating: "Traduciendo...", translateError: "Error de traducción",
+    share: "Compartir", viewProfile: "Ver Perfil", loadMore: "Cargar más", noMoreItems: "Has llegado al final",
+    users: "Usuarios", searchUsers: "Buscar usuarios...", noUsersFound: "No se encontraron usuarios",
+    privacyPolicy: "Política de Privacidad", termsOfService: "Términos de Servicio",
+    legalSection: "Legal", aboutApp: "Sobre Patent", appVersion: "Versión",
+    userNotFound: "Usuario no encontrado", tipsByUser: "Consejos",
   },
   fr: {
     appName: "Patent",
@@ -224,6 +250,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "Aucun conseil dans cette catégorie", feedEmpty: "Le fil est vide",
     notificationsTitle: "Paramètres de notifications", done: "Terminé", settingsTitle: "Paramètres",
     translate: "Traduire", showOriginal: "Original", translating: "Traduction...", translateError: "Erreur de traduction",
+    share: "Partager", viewProfile: "Voir le Profil", loadMore: "Charger plus", noMoreItems: "Vous avez atteint la fin",
+    users: "Utilisateurs", searchUsers: "Rechercher des utilisateurs...", noUsersFound: "Aucun utilisateur trouvé",
+    privacyPolicy: "Politique de Confidentialité", termsOfService: "Conditions d'Utilisation",
+    legalSection: "Légal", aboutApp: "À propos de Patent", appVersion: "Version",
+    userNotFound: "Utilisateur introuvable", tipsByUser: "Conseils",
   },
   de: {
     appName: "Patent",
@@ -247,6 +278,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "Keine Tipps in dieser Kategorie", feedEmpty: "Feed ist leer",
     notificationsTitle: "Benachrichtigungseinstellungen", done: "Fertig", settingsTitle: "Einstellungen",
     translate: "Übersetzen", showOriginal: "Original", translating: "Übersetze...", translateError: "Übersetzungsfehler",
+    share: "Teilen", viewProfile: "Profil anzeigen", loadMore: "Mehr laden", noMoreItems: "Ende des Feeds",
+    users: "Nutzer", searchUsers: "Nutzer suchen...", noUsersFound: "Keine Nutzer gefunden",
+    privacyPolicy: "Datenschutzrichtlinie", termsOfService: "Nutzungsbedingungen",
+    legalSection: "Rechtliches", aboutApp: "Über Patent", appVersion: "Version",
+    userNotFound: "Nutzer nicht gefunden", tipsByUser: "Tipps",
   },
   ru: {
     appName: "Patent",
@@ -270,6 +306,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "В этой категории нет советов", feedEmpty: "Лента пуста",
     notificationsTitle: "Настройки уведомлений", done: "Готово", settingsTitle: "Настройки",
     translate: "Перевести", showOriginal: "Оригинал", translating: "Перевод...", translateError: "Ошибка перевода",
+    share: "Поделиться", viewProfile: "Просмотр профиля", loadMore: "Загрузить ещё", noMoreItems: "Больше нет элементов",
+    users: "Пользователи", searchUsers: "Поиск пользователей...", noUsersFound: "Пользователи не найдены",
+    privacyPolicy: "Политика конфиденциальности", termsOfService: "Условия использования",
+    legalSection: "Правовая информация", aboutApp: "О Patent", appVersion: "Версия",
+    userNotFound: "Пользователь не найден", tipsByUser: "Советы",
   },
   zh: {
     appName: "Patent",
@@ -293,6 +334,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "此分类无提示", feedEmpty: "动态为空",
     notificationsTitle: "通知设置", done: "完成", settingsTitle: "设置",
     translate: "翻译", showOriginal: "原文", translating: "翻译中...", translateError: "翻译失败",
+    share: "分享", viewProfile: "查看资料", loadMore: "加载更多", noMoreItems: "已到底部",
+    users: "用户", searchUsers: "搜索用户...", noUsersFound: "未找到用户",
+    privacyPolicy: "隐私政策", termsOfService: "服务条款",
+    legalSection: "法律", aboutApp: "关于Patent", appVersion: "版本",
+    userNotFound: "用户未找到", tipsByUser: "提示",
   },
   pt: {
     appName: "Patent",
@@ -316,6 +362,11 @@ const t: Record<string, Partial<Translations>> = {
     nothingInCategory: "Nenhuma dica nesta categoria", feedEmpty: "O feed está vazio",
     notificationsTitle: "Configurações de notificações", done: "Concluído", settingsTitle: "Configurações",
     translate: "Traduzir", showOriginal: "Original", translating: "Traduzindo...", translateError: "Erro de tradução",
+    share: "Compartilhar", viewProfile: "Ver Perfil", loadMore: "Carregar mais", noMoreItems: "Chegou ao fim",
+    users: "Usuários", searchUsers: "Buscar usuários...", noUsersFound: "Nenhum usuário encontrado",
+    privacyPolicy: "Política de Privacidade", termsOfService: "Termos de Serviço",
+    legalSection: "Legal", aboutApp: "Sobre o Patent", appVersion: "Versão",
+    userNotFound: "Usuário não encontrado", tipsByUser: "Dicas",
   },
 };
 

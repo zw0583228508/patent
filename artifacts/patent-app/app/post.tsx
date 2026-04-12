@@ -14,11 +14,14 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
+import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useToast } from "@/context/ToastContext";
 import { CATEGORIES } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
+import { api } from "@/utils/api";
+import { uploadImages } from "@/utils/upload";
 
 export default function PostScreen() {
   const colors = useColors();
@@ -26,6 +29,7 @@ export default function PostScreen() {
   const { t, isRTL } = useSettings();
   const { addPost } = useFeed();
   const { showToast } = useToast();
+  const { user } = useAuth();
   const params = useLocalSearchParams<{ type?: string }>();
   const [postType, setPostType] = useState<"tip" | "question">(
     params.type === "question" ? "question" : "tip"
@@ -67,13 +71,29 @@ export default function PostScreen() {
     },
   ];
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!text.trim() && media.length === 0) return;
     if (Platform.OS !== "web")
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    addPost(postType, text.trim(), category);
+    const localPost = addPost(postType, text.trim(), category);
     showToast(t("toastPostPublished"), "success", "zap");
     router.back();
+    if (user && localPost) {
+      let imageUrls: string[] = [];
+      if (media.length > 0) {
+        imageUrls = await uploadImages(media.map((m) => m.uri)).catch(() => []);
+      }
+      api.posts.create({
+        id: localPost.id,
+        authorId: user.id,
+        type: postType,
+        title: text.trim().slice(0, 120),
+        content: text.trim(),
+        categoryId: category,
+        images: imageUrls,
+        tags: [],
+      }).catch(() => {});
+    }
   }
 
   return (

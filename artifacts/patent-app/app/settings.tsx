@@ -210,6 +210,50 @@ export default function SettingsScreen() {
             );
           })}
         </View>
+
+        <Text style={[styles.sectionLabel, { color: colors.mutedForeground, textAlign, marginTop: 24 }]}>{t("legalSection")}</Text>
+
+        <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}>
+          <TouchableOpacity
+            style={[styles.row, { flexDirection: dir, borderWidth: 0, borderRadius: 0 }]}
+            onPress={() => router.push("/privacy")}
+            testID="privacy-policy-btn"
+          >
+            <View style={[styles.topicIconWrap, { backgroundColor: colors.surface2 }]}>
+              <Feather name="shield" size={16} color={colors.mutedForeground} />
+            </View>
+            <Text style={[styles.rowLabel, { color: colors.foreground }]}>{t("privacyPolicy")}</Text>
+            <Feather
+              name={isRTL ? "chevron-left" : "chevron-right"}
+              size={18}
+              color={colors.mutedForeground}
+              style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
+            />
+          </TouchableOpacity>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <TouchableOpacity
+            style={[styles.row, { flexDirection: dir, borderWidth: 0, borderRadius: 0 }]}
+            onPress={() => router.push("/privacy")}
+            testID="terms-btn"
+          >
+            <View style={[styles.topicIconWrap, { backgroundColor: colors.surface2 }]}>
+              <Feather name="file-text" size={16} color={colors.mutedForeground} />
+            </View>
+            <Text style={[styles.rowLabel, { color: colors.foreground }]}>{t("termsOfService")}</Text>
+            <Feather
+              name={isRTL ? "chevron-left" : "chevron-right"}
+              size={18}
+              color={colors.mutedForeground}
+              style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
+            />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.versionRow}>
+          <Text style={[styles.versionText, { color: colors.mutedForeground }]}>
+            {t("aboutApp")} · {t("appVersion")} 1.0.0
+          </Text>
+        </View>
       </ScrollView>
     </View>
   );
@@ -279,4 +323,6 @@ const styles = StyleSheet.create({
   langRow: { alignItems: "center", paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: StyleSheet.hairlineWidth, gap: 14 },
   langFlag: { fontSize: 24 },
   langName: { fontSize: 16 },
+  versionRow: { alignItems: "center", paddingVertical: 24 },
+  versionText: { fontSize: 12 },
 });

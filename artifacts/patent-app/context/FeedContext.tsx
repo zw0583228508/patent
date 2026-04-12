@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 import { Comment, COMMENTS_MAP, FEED_ITEMS, FeedItem, Question, Tip } from "@/data/mockData";
+
+const PAGE_SIZE = 15;
 
 type VoteMap = Record<string, "worked" | "didnt" | null>;
 type LikeSet = Set<string>;
@@ -17,9 +19,13 @@ type FeedContextType = {
   toggleSave: (id: string) => void;
   toggleLike: (id: string) => void;
   addComment: (itemId: string, text: string) => void;
-  addPost: (type: "tip" | "question", text: string, categoryId: string) => void;
+  addPost: (type: "tip" | "question", text: string, categoryId: string) => FeedItem;
   activeCategory: string;
   setActiveCategory: (cat: string) => void;
+  visibleCount: number;
+  loadMore: () => void;
+  hasMore: (total: number) => boolean;
+  resetPagination: () => void;
 };
 
 const FeedContext = createContext<FeedContextType | null>(null);
@@ -38,8 +44,9 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [likedIds, setLikedIds] = useState<LikeSet>(new Set());
   const [comments, setComments] = useState<CommentsMap>(COMMENTS_MAP);
-  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeCategory, setActiveCategoryState] = useState("all");
   const [userPosts, setUserPosts] = useState<FeedItem[]>([]);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   useEffect(() => {
     AsyncStorage.getItem("patent_votes").then((v) => {
@@ -134,7 +141,24 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       AsyncStorage.setItem("patent_user_posts", JSON.stringify(next));
       return next;
     });
+    setVisibleCount((c) => c + 1);
+    return newItem;
   }
+
+  const setActiveCategory = useCallback((cat: string) => {
+    setActiveCategoryState(cat);
+    setVisibleCount(PAGE_SIZE);
+  }, []);
+
+  const loadMore = useCallback(() => {
+    setVisibleCount((c) => c + PAGE_SIZE);
+  }, []);
+
+  const resetPagination = useCallback(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, []);
+
+  const hasMore = useCallback((total: number) => visibleCount < total, [visibleCount]);
 
   const allItems: FeedItem[] = [...userPosts, ...FEED_ITEMS];
 
@@ -158,6 +182,10 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         addPost,
         activeCategory,
         setActiveCategory,
+        visibleCount,
+        loadMore,
+        hasMore,
+        resetPagination,
       }}
     >
       {children}

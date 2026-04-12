@@ -25,6 +25,7 @@ import { useSettings } from "@/context/SettingsContext";
 import { useToast } from "@/context/ToastContext";
 import { Comment } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
+import { api } from "@/utils/api";
 
 function formatCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -44,7 +45,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const insets = useSafeAreaInsets();
   const { comments, addComment } = useFeed();
   const { t, isRTL } = useSettings();
-  const { isLoggedIn, setShowLoginModal } = useAuth();
+  const { isLoggedIn, setShowLoginModal, user } = useAuth();
   const { showToast } = useToast();
   const [text, setText] = useState("");
   const [media, setMedia] = useState<MediaAsset[]>([]);
@@ -77,9 +78,18 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
     }
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     addComment(itemId, text.trim());
+    const commentText = text.trim();
     setText("");
     setMedia([]);
     showToast(t("toastCommentAdded"), "success", "message-circle");
+    if (user && commentText) {
+      api.comments.create({
+        id: "cmt_" + Date.now() + Math.random().toString(36).slice(2, 7),
+        postId: itemId,
+        authorId: user.id,
+        content: commentText,
+      }).catch(() => {});
+    }
   }
 
   function toggleCommentLike(commentId: string) {

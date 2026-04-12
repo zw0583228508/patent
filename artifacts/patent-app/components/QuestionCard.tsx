@@ -1,9 +1,11 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Platform,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -25,9 +27,9 @@ function formatCount(n: number): string {
   return String(n);
 }
 
-type Props = { question: Question };
+type Props = { question: Question; index?: number };
 
-export default function QuestionCard({ question }: Props) {
+export default function QuestionCard({ question, index = 0 }: Props) {
   const colors = useColors();
   const { t, isRTL } = useSettings();
   const { likedIds, comments, toggleLike } = useFeed();
@@ -39,11 +41,25 @@ export default function QuestionCard({ question }: Props) {
   const isMyQuestion = question.userId === "me";
   const [showComments, setShowComments] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
+
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(16)).current;
   const scaleLike = React.useRef(new Animated.Value(1)).current;
 
   const dir = isRTL ? "row-reverse" : "row";
   const textAlign = isRTL ? "right" : "left";
   const alignSelf = isRTL ? "flex-end" : "flex-start";
+
+  useEffect(() => {
+    const delay = Math.min(index * 60, 300);
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, damping: 20, stiffness: 220 }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, []);
 
   function handleFollow() {
     requireAuth(() => {
@@ -65,18 +81,27 @@ export default function QuestionCard({ question }: Props) {
     });
   }
 
+  async function handleShare() {
+    try {
+      await Share.share({ message: question.text, title: "Patent — " + question.category });
+    } catch {}
+  }
+
+  function handleAuthorPress() {
+    if (question.userId === "me") router.push("/(tabs)/profile");
+    else router.push(`/profile/${question.userId}` as any);
+  }
+
   const likeCount = question.likeCount + (liked ? 1 : 0);
   const commentCount = (comments[question.id] ?? []).length || question.answerCount;
 
   return (
     <>
-      <View
+      <Animated.View
         style={[
           styles.card,
-          {
-            backgroundColor: colors.card,
-            borderColor: "rgba(64,224,240,0.2)",
-          },
+          { backgroundColor: colors.card, borderColor: "rgba(64,224,240,0.2)" },
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         ]}
         testID={`question-card-${question.id}`}
       >
@@ -86,16 +111,18 @@ export default function QuestionCard({ question }: Props) {
         </View>
 
         <View style={[styles.header, { flexDirection: dir }]}>
-          <View style={[styles.avatar, { backgroundColor: question.avatarGradient[0] }]}>
-            <Text style={styles.avatarText}>{question.initials}</Text>
-          </View>
-          <View style={[styles.meta, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+          <TouchableOpacity onPress={handleAuthorPress} activeOpacity={0.7}>
+            <View style={[styles.avatar, { backgroundColor: question.avatarGradient[0] }]}>
+              <Text style={styles.avatarText}>{question.initials}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.meta, { alignItems: isRTL ? "flex-end" : "flex-start" }]} onPress={handleAuthorPress} activeOpacity={0.7}>
             <Text style={[styles.author, { color: colors.foreground }]}>{question.author}</Text>
             <View style={[styles.catRow, { flexDirection: dir }]}>
               <Feather name={question.categoryIcon as any} size={10} color={colors.mutedForeground} />
               <Text style={[styles.category, { color: colors.mutedForeground }]}> {question.category}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
           {!isMyQuestion && (
             <TouchableOpacity
               style={[
@@ -128,10 +155,7 @@ export default function QuestionCard({ question }: Props) {
             style={[
               styles.answerBtn,
               { flexDirection: dir },
-              {
-                backgroundColor: "rgba(64,224,240,0.1)",
-                borderColor: "rgba(64,224,240,0.3)",
-              },
+              { backgroundColor: "rgba(64,224,240,0.1)", borderColor: "rgba(64,224,240,0.3)" },
             ]}
             onPress={() => setShowComments(true)}
             testID={`answer-btn-${question.id}`}
@@ -156,10 +180,14 @@ export default function QuestionCard({ question }: Props) {
               </TouchableOpacity>
             </Animated.View>
 
+            <TouchableOpacity style={styles.actionBtn} onPress={handleShare} testID={`share-question-${question.id}`}>
+              <Feather name="share-2" size={15} color={colors.mutedForeground} />
+            </TouchableOpacity>
+
             <Text style={[styles.timestamp, { color: "#4a4a6a" }]}>{question.timestamp}</Text>
           </View>
         </View>
-      </View>
+      </Animated.View>
 
       <CommentsSheet
         visible={showComments}
@@ -173,92 +201,31 @@ export default function QuestionCard({ question }: Props) {
 }
 
 const styles = StyleSheet.create({
-  card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 10,
-    gap: 10,
-  },
+  card: { borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 10, gap: 10 },
   qLabel: {
-    alignItems: "center",
-    borderRadius: 100,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    gap: 4,
+    alignItems: "center", borderRadius: 100, paddingHorizontal: 8, paddingVertical: 3, gap: 4,
   },
-  qLabelText: {
-    fontSize: 9,
-    letterSpacing: 1,
-    fontWeight: "600" as const,
-    textTransform: "uppercase",
-  },
-  header: {
-    alignItems: "center",
-    gap: 10,
-  },
+  qLabelText: { fontSize: 9, letterSpacing: 1, fontWeight: "600" as const, textTransform: "uppercase" },
+  header: { alignItems: "center", gap: 10 },
   followBtn: {
     width: 24, height: 24, borderRadius: 12, borderWidth: 1,
     alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 11,
-    fontWeight: "700" as const,
-    color: "#0a0a0f",
-  },
-  meta: {
-    flex: 1,
-  },
-  author: {
-    fontSize: 12,
-    fontWeight: "600" as const,
-  },
-  catRow: {
-    alignItems: "center",
-    marginTop: 2,
-  },
-  category: {
-    fontSize: 10,
-  },
-  qText: {
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  footer: {
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+  avatar: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  avatarText: { fontSize: 11, fontWeight: "700" as const, color: "#0a0a0f" },
+  meta: { flex: 1 },
+  author: { fontSize: 12, fontWeight: "600" as const },
+  catRow: { alignItems: "center", marginTop: 2 },
+  category: { fontSize: 10 },
+  qText: { fontSize: 13, lineHeight: 20 },
+  footer: { alignItems: "center", justifyContent: "space-between" },
   answerBtn: {
-    alignItems: "center",
-    borderRadius: 8,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    gap: 6,
+    alignItems: "center", borderRadius: 8, paddingVertical: 7,
+    paddingHorizontal: 12, borderWidth: 1, gap: 6,
   },
-  answerBtnText: {
-    fontSize: 11,
-    fontWeight: "500" as const,
-  },
-  rightActions: {
-    alignItems: "center",
-    gap: 12,
-  },
-  actionBtn: {
-    alignItems: "center",
-    gap: 4,
-  },
-  actionCount: {
-    fontSize: 13,
-  },
-  timestamp: {
-    fontSize: 10,
-  },
+  answerBtnText: { fontSize: 11, fontWeight: "500" as const },
+  rightActions: { alignItems: "center", gap: 12 },
+  actionBtn: { alignItems: "center", gap: 4 },
+  actionCount: { fontSize: 13 },
+  timestamp: { fontSize: 10 },
 });

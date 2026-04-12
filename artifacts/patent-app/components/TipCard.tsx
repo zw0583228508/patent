@@ -1,9 +1,11 @@
 import { Feather } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
-import React, { useState } from "react";
+import { router } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Animated,
   Platform,
+  Share,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -25,9 +27,9 @@ function formatCount(n: number): string {
   return String(n);
 }
 
-type Props = { tip: Tip };
+type Props = { tip: Tip; index?: number };
 
-export default function TipCard({ tip }: Props) {
+export default function TipCard({ tip, index = 0 }: Props) {
   const colors = useColors();
   const { t, isRTL } = useSettings();
   const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
@@ -41,6 +43,8 @@ export default function TipCard({ tip }: Props) {
   const [showComments, setShowComments] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
 
+  const fadeAnim = React.useRef(new Animated.Value(0)).current;
+  const slideAnim = React.useRef(new Animated.Value(16)).current;
   const scaleWorked = React.useRef(new Animated.Value(1)).current;
   const scaleNot = React.useRef(new Animated.Value(1)).current;
   const scaleLike = React.useRef(new Animated.Value(1)).current;
@@ -48,6 +52,17 @@ export default function TipCard({ tip }: Props) {
   const dir = isRTL ? "row-reverse" : "row";
   const textAlign = isRTL ? "right" : "left";
   const alignSelf = isRTL ? "flex-start" : "flex-end";
+
+  useEffect(() => {
+    const delay = Math.min(index * 60, 300);
+    const timer = setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(fadeAnim, { toValue: 1, duration: 350, useNativeDriver: true }),
+        Animated.spring(slideAnim, { toValue: 0, useNativeDriver: true, damping: 20, stiffness: 220 }),
+      ]).start();
+    }, delay);
+    return () => clearTimeout(timer);
+  }, []);
 
   function animatePress(anim: Animated.Value) {
     Animated.sequence([
@@ -83,6 +98,20 @@ export default function TipCard({ tip }: Props) {
     });
   }
 
+  async function handleShare() {
+    try {
+      await Share.share({
+        message: tip.text,
+        title: "Patent — " + tip.category,
+      });
+    } catch {}
+  }
+
+  function handleAuthorPress() {
+    if (tip.userId === "me") router.push("/(tabs)/profile");
+    else router.push(`/profile/${tip.userId}` as any);
+  }
+
   const workedCount = tip.workedCount + (myVote === "worked" ? 1 : 0);
   const didntCount = tip.didntWorkCount + (myVote === "didnt" ? 1 : 0);
   const likeCount = tip.likeCount + (liked ? 1 : 0);
@@ -91,7 +120,14 @@ export default function TipCard({ tip }: Props) {
 
   return (
     <>
-      <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} testID={`tip-card-${tip.id}`}>
+      <Animated.View
+        style={[
+          styles.card,
+          { backgroundColor: colors.card, borderColor: colors.border },
+          { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
+        ]}
+        testID={`tip-card-${tip.id}`}
+      >
         {tip.isTrending && (
           <View style={[styles.trendingBadge, { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)", flexDirection: dir, alignSelf }]}>
             <Feather name="trending-up" size={10} color={colors.primary} />
@@ -100,16 +136,18 @@ export default function TipCard({ tip }: Props) {
         )}
 
         <View style={[styles.header, { flexDirection: dir }]}>
-          <View style={[styles.avatar, { backgroundColor: tip.avatarGradient[0] }]}>
-            <Text style={styles.avatarText}>{tip.initials}</Text>
-          </View>
-          <View style={[styles.meta, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+          <TouchableOpacity onPress={handleAuthorPress} activeOpacity={0.7}>
+            <View style={[styles.avatar, { backgroundColor: tip.avatarGradient[0] }]}>
+              <Text style={styles.avatarText}>{tip.initials}</Text>
+            </View>
+          </TouchableOpacity>
+          <TouchableOpacity style={[styles.meta, { alignItems: isRTL ? "flex-end" : "flex-start" }]} onPress={handleAuthorPress} activeOpacity={0.7}>
             <Text style={[styles.author, { color: colors.foreground }]}>{tip.author}</Text>
             <View style={[styles.catRow, { flexDirection: dir }]}>
               <Feather name={tip.categoryIcon as any} size={10} color={colors.mutedForeground} />
               <Text style={[styles.category, { color: colors.mutedForeground }]}> {tip.category}</Text>
             </View>
-          </View>
+          </TouchableOpacity>
           <View style={[styles.headerRight, { flexDirection: dir }]}>
             <View style={[styles.trustBadge, { backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
               <Text style={[styles.trustText, { color: colors.accentGreen }]}>{tip.trustScore}%</Text>
@@ -219,9 +257,17 @@ export default function TipCard({ tip }: Props) {
             <Feather name="bookmark" size={16} color={saved ? colors.primary : colors.mutedForeground} />
           </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.actionBtn}
+            onPress={handleShare}
+            testID={`share-${tip.id}`}
+          >
+            <Feather name="share-2" size={16} color={colors.mutedForeground} />
+          </TouchableOpacity>
+
           <Text style={[styles.timestamp, { color: "#4a4a6a", marginStart: "auto" }]}>{tip.timestamp}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       <CommentsSheet
         visible={showComments}

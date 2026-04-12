@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   FlatList,
   Platform,
   StyleSheet,
@@ -44,15 +45,15 @@ function CategoryPill({ id, label, active, onPress }: { id: string; label: strin
 export default function FeedScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { items, activeCategory, setActiveCategory } = useFeed();
+  const { items, activeCategory, setActiveCategory, visibleCount, loadMore, hasMore, resetPagination } = useFeed();
   const { t, isRTL, followedTopics } = useSettings();
   const social = useSocial();
   const [feedMode, setFeedMode] = useState<FeedMode>("forYou");
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const renderItem = useCallback(({ item }: { item: FeedItem }) => {
-    if (item.type === "tip") return <TipCard tip={item as Tip} />;
-    return <QuestionCard question={item as Question} />;
-  }, []);
+  useEffect(() => {
+    resetPagination();
+  }, [feedMode]);
 
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
@@ -75,6 +76,22 @@ export default function FeedScreen() {
     }
     return items;
   }, [items, feedMode, social.followedUsers, followedTopics]);
+
+  const displayItems = useMemo(() => filteredItems.slice(0, visibleCount), [filteredItems, visibleCount]);
+  const showLoadMore = hasMore(filteredItems.length);
+
+  const renderItem = useCallback(({ item, index }: { item: FeedItem; index: number }) => {
+    if (item.type === "tip") return <TipCard tip={item as Tip} index={index} />;
+    return <QuestionCard question={item as Question} index={index} />;
+  }, []);
+
+  function handleLoadMore() {
+    setLoadingMore(true);
+    setTimeout(() => {
+      loadMore();
+      setLoadingMore(false);
+    }, 400);
+  }
 
   const FEED_TABS: { mode: FeedMode; label: string }[] = [
     { mode: "forYou", label: t("forYou") },
@@ -115,12 +132,12 @@ export default function FeedScreen() {
       </View>
 
       <FlatList
-        data={filteredItems}
+        data={displayItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={[styles.list, { paddingBottom: Platform.OS === "web" ? 100 : insets.bottom + 80 }]}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={filteredItems.length > 0}
+        scrollEnabled={displayItems.length > 0}
         ListHeaderComponent={
           feedMode === "all" ? (
             <FlatList
@@ -139,6 +156,30 @@ export default function FeedScreen() {
               showsHorizontalScrollIndicator={false}
               style={styles.categoriesRow}
             />
+          ) : null
+        }
+        ListFooterComponent={
+          showLoadMore ? (
+            <TouchableOpacity
+              style={[styles.loadMoreBtn, { backgroundColor: colors.surface2, borderColor: colors.border }]}
+              onPress={handleLoadMore}
+              disabled={loadingMore}
+              testID="load-more-btn"
+            >
+              {loadingMore ? (
+                <ActivityIndicator size={16} color={colors.primary} />
+              ) : (
+                <>
+                  <Feather name="chevrons-down" size={16} color={colors.primary} />
+                  <Text style={[styles.loadMoreText, { color: colors.primary }]}>{t("loadMore")}</Text>
+                </>
+              )}
+            </TouchableOpacity>
+          ) : displayItems.length > 0 ? (
+            <View style={styles.endOfFeed}>
+              <Feather name="check-circle" size={16} color={colors.mutedForeground} />
+              <Text style={[styles.endOfFeedText, { color: colors.mutedForeground }]}>{t("noMoreItems")}</Text>
+            </View>
           ) : null
         }
         ListEmptyComponent={
@@ -163,24 +204,16 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingBottom: 8,
   },
   logo: { fontSize: 26, fontWeight: "800" as const, letterSpacing: -0.5 },
   headerIcons: { gap: 4 },
   iconBtn: { padding: 8 },
-  feedTabs: {
-    borderBottomWidth: 1,
-    paddingHorizontal: 4,
-  },
+  feedTabs: { borderBottomWidth: 1, paddingHorizontal: 4 },
   feedTab: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
+    flex: 1, alignItems: "center", paddingVertical: 10,
+    borderBottomWidth: 2, borderBottomColor: "transparent",
   },
   feedTabText: { fontSize: 14, fontWeight: "600" as const },
   categoriesRow: { marginBottom: 12, marginTop: 4 },
@@ -190,4 +223,12 @@ const styles = StyleSheet.create({
   list: { paddingHorizontal: 16, paddingTop: 8 },
   empty: { alignItems: "center", paddingTop: 60, gap: 12, paddingHorizontal: 32 },
   emptyText: { fontSize: 15 },
+  loadMoreBtn: {
+    flexDirection: "row", alignItems: "center", justifyContent: "center",
+    gap: 8, borderRadius: 14, borderWidth: 1, paddingVertical: 14,
+    marginHorizontal: 16, marginBottom: 8, marginTop: 4,
+  },
+  loadMoreText: { fontSize: 14, fontWeight: "600" as const },
+  endOfFeed: { alignItems: "center", flexDirection: "row", justifyContent: "center", gap: 8, paddingVertical: 20 },
+  endOfFeedText: { fontSize: 13 },
 });

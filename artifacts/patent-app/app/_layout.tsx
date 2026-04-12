@@ -16,8 +16,10 @@ import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import LoginModal from "@/components/LoginModal";
+import OfflineBanner from "@/components/OfflineBanner";
 import Toast from "@/components/Toast";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { usePushNotifications } from "@/hooks/usePushNotifications";
 import { AuthProvider } from "@/context/AuthContext";
 import { FeedProvider } from "@/context/FeedContext";
 import { SettingsProvider } from "@/context/SettingsContext";
@@ -29,6 +31,11 @@ SplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "";
+
+function PushNotificationSetup() {
+  usePushNotifications();
+  return null;
+}
 
 function RootLayoutNav() {
   useEffect(() => {
@@ -43,6 +50,8 @@ function RootLayoutNav() {
       <Stack.Screen name="onboarding" options={{ headerShown: false, gestureEnabled: false }} />
       <Stack.Screen name="post" options={{ presentation: "modal", headerShown: false }} />
       <Stack.Screen name="settings" options={{ presentation: "modal", headerShown: false }} />
+      <Stack.Screen name="privacy" options={{ presentation: "modal", headerShown: false }} />
+      <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
     </Stack>
   );
 }
@@ -75,9 +84,11 @@ export default function RootLayout() {
                       <FeedProvider>
                         <GestureHandlerRootView style={{ flex: 1 }}>
                           <KeyboardProvider>
+                            <PushNotificationSetup />
                             <RootLayoutNav />
                             <LoginModal />
                             <Toast />
+                            <OfflineBanner />
                           </KeyboardProvider>
                         </GestureHandlerRootView>
                       </FeedProvider>

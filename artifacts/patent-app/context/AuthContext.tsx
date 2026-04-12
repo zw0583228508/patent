@@ -1,5 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import { useAuth as useClerkAuth, useUser } from "@clerk/expo";
+import { api } from "@/utils/api";
 
 export type AuthUser = {
   id: string;
@@ -51,6 +52,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     prevSignedIn.current = isSignedIn ?? false;
   }, [isSignedIn, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || !clerkUser) return;
+    const name =
+      clerkUser.fullName ??
+      clerkUser.username ??
+      clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0] ??
+      "משתמש";
+    const username =
+      clerkUser.username ??
+      clerkUser.primaryEmailAddress?.emailAddress?.split("@")[0]?.replace(/[^a-z0-9_]/gi, "_") ??
+      `user_${clerkUser.id.slice(-6)}`;
+    api.users.upsert({
+      id: clerkUser.id,
+      name,
+      username,
+      bio: "",
+      avatarGradient: "primary",
+    }).catch(() => {});
+  }, [isSignedIn, isLoaded, clerkUser?.id]);
 
   const logout = useCallback(async () => {
     await signOut();
