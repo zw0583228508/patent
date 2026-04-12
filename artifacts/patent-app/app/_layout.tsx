@@ -53,6 +53,7 @@ function RootLayoutNav() {
       <Stack.Screen name="settings" options={{ presentation: "modal", headerShown: false }} />
       <Stack.Screen name="privacy" options={{ presentation: "modal", headerShown: false }} />
       <Stack.Screen name="notifications" options={{ headerShown: false }} />
+      <Stack.Screen name="sso-callback" options={{ headerShown: false }} />
       <Stack.Screen name="profile/[userId]" options={{ headerShown: false }} />
     </Stack>
   );
