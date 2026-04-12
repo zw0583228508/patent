@@ -47,6 +47,7 @@ export default function QuestionCard({ question, index = 0 }: Props) {
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(16)).current;
   const scaleLike = React.useRef(new Animated.Value(1)).current;
+  const scaleAnswer = React.useRef(new Animated.Value(1)).current;
 
   const dir = isRTL ? "row-reverse" : "row";
   const textAlign = isRTL ? "right" : "left";
@@ -102,6 +103,17 @@ export default function QuestionCard({ question, index = 0 }: Props) {
     else router.push(`/profile/${question.userId}` as any);
   }
 
+  function handleAnswer() {
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      Animated.sequence([
+        Animated.timing(scaleAnswer, { toValue: 0.96, duration: 60, useNativeDriver: true }),
+        Animated.spring(scaleAnswer, { toValue: 1, useNativeDriver: true }),
+      ]).start();
+      setShowComments(true);
+    });
+  }
+
   const likeCount = question.likeCount + (liked ? 1 : 0);
   const commentCount = (comments[question.id] ?? []).length || question.answerCount;
   const repostCount = (question.repostCount ?? 0) + (reposted ? 1 : 0);
@@ -119,16 +131,18 @@ export default function QuestionCard({ question, index = 0 }: Props) {
       <Animated.View
         style={[
           styles.card,
-          { backgroundColor: colors.card, borderColor: question.repostedBy ? "rgba(64,224,64,0.2)" : "rgba(64,224,240,0.2)" },
+          { backgroundColor: colors.card, borderColor: question.repostedBy ? "rgba(64,224,64,0.2)" : "rgba(64,224,240,0.25)" },
           { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         ]}
         testID={`question-card-${question.id}`}
       >
+        {/* Badge */}
         <View style={[styles.qLabel, { backgroundColor: "rgba(64,224,240,0.1)", flexDirection: dir, alignSelf }]}>
           <Feather name="help-circle" size={10} color={colors.accentCyan} />
           <Text style={[styles.qLabelText, { color: colors.accentCyan }]}>{t("lookingForSolution")}</Text>
         </View>
 
+        {/* Author row */}
         <View style={[styles.header, { flexDirection: dir }]}>
           <TouchableOpacity onPress={handleAuthorPress} activeOpacity={0.7}>
             <View style={[styles.avatar, { backgroundColor: question.avatarGradient[0] }]}>
@@ -159,6 +173,7 @@ export default function QuestionCard({ question, index = 0 }: Props) {
           )}
         </View>
 
+        {/* Question text */}
         <Text style={[styles.qText, { color: "#c0c0d8", textAlign }]}>
           {translatedText ?? question.text}
         </Text>
@@ -169,55 +184,56 @@ export default function QuestionCard({ question, index = 0 }: Props) {
           onTranslated={setTranslatedText}
         />
 
-        <View style={[styles.footer, { flexDirection: dir }]}>
+        {/* Prominent answer CTA */}
+        <Animated.View style={{ transform: [{ scale: scaleAnswer }] }}>
           <TouchableOpacity
-            style={[
-              styles.answerBtn,
-              { flexDirection: dir },
-              { backgroundColor: "rgba(64,224,240,0.1)", borderColor: "rgba(64,224,240,0.3)" },
-            ]}
-            onPress={() => setShowComments(true)}
+            style={[styles.answerCta, { borderColor: "rgba(64,224,240,0.45)", backgroundColor: "rgba(64,224,240,0.08)", flexDirection: dir }]}
+            onPress={handleAnswer}
+            activeOpacity={0.75}
             testID={`answer-btn-${question.id}`}
           >
-            <Feather name="edit-3" size={12} color={colors.accentCyan} />
-            <Text style={[styles.answerBtnText, { color: colors.accentCyan }]}>
-              {t("answer")} · {commentCount}
+            <Feather name="edit-3" size={15} color={colors.accentCyan} />
+            <Text style={[styles.answerCtaText, { color: colors.accentCyan }]}>
+              {commentCount > 0
+                ? `${t("answer")} · ${commentCount} ${t("answers")}`
+                : t("writeAnswer")}
             </Text>
           </TouchableOpacity>
+        </Animated.View>
 
-          <View style={[styles.rightActions, { flexDirection: dir }]}>
-            <Animated.View style={{ transform: [{ scale: scaleLike }] }}>
-              <TouchableOpacity
-                style={[styles.actionBtn, { flexDirection: dir }]}
-                onPress={handleLike}
-                testID={`like-question-${question.id}`}
-              >
-                <Feather name="heart" size={15} color={liked ? colors.accentPink : colors.mutedForeground} />
-                <Text style={[styles.actionCount, { color: liked ? colors.accentPink : colors.mutedForeground }]}>
-                  {formatCount(likeCount)}
-                </Text>
-              </TouchableOpacity>
-            </Animated.View>
-
+        {/* Secondary actions row */}
+        <View style={[styles.actionsRow, { flexDirection: dir }]}>
+          <Animated.View style={{ transform: [{ scale: scaleLike }] }}>
             <TouchableOpacity
               style={[styles.actionBtn, { flexDirection: dir }]}
-              onPress={handleRepost}
-              testID={`repost-question-${question.id}`}
+              onPress={handleLike}
+              testID={`like-question-${question.id}`}
             >
-              <Feather name="repeat" size={15} color={reposted ? colors.accentGreen : colors.mutedForeground} />
-              {repostCount > 0 && (
-                <Text style={[styles.actionCount, { color: reposted ? colors.accentGreen : colors.mutedForeground }]}>
-                  {repostCount}
-                </Text>
-              )}
+              <Feather name="heart" size={15} color={liked ? colors.accentPink : colors.mutedForeground} />
+              <Text style={[styles.actionCount, { color: liked ? colors.accentPink : colors.mutedForeground }]}>
+                {formatCount(likeCount)}
+              </Text>
             </TouchableOpacity>
+          </Animated.View>
 
-            <TouchableOpacity style={styles.actionBtn} onPress={handleShare} testID={`share-question-${question.id}`}>
-              <Feather name="share-2" size={15} color={colors.mutedForeground} />
-            </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.actionBtn, { flexDirection: dir }]}
+            onPress={handleRepost}
+            testID={`repost-question-${question.id}`}
+          >
+            <Feather name="repeat" size={15} color={reposted ? colors.accentGreen : colors.mutedForeground} />
+            {repostCount > 0 && (
+              <Text style={[styles.actionCount, { color: reposted ? colors.accentGreen : colors.mutedForeground }]}>
+                {repostCount}
+              </Text>
+            )}
+          </TouchableOpacity>
 
-            <Text style={[styles.timestamp, { color: "#4a4a6a" }]}>{question.timestamp}</Text>
-          </View>
+          <TouchableOpacity style={styles.actionBtn} onPress={handleShare} testID={`share-question-${question.id}`}>
+            <Feather name="share-2" size={15} color={colors.mutedForeground} />
+          </TouchableOpacity>
+
+          <Text style={[styles.timestamp, { color: "#4a4a6a", marginStart: "auto" }]}>{question.timestamp}</Text>
         </View>
       </Animated.View>
 
@@ -250,13 +266,21 @@ const styles = StyleSheet.create({
   catRow: { alignItems: "center", marginTop: 2 },
   category: { fontSize: 10 },
   qText: { fontSize: 13, lineHeight: 20 },
-  footer: { alignItems: "center", justifyContent: "space-between" },
-  answerBtn: {
-    alignItems: "center", borderRadius: 8, paddingVertical: 7,
-    paddingHorizontal: 12, borderWidth: 1, gap: 6,
+  answerCta: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    paddingVertical: 11,
+    paddingHorizontal: 16,
   },
-  answerBtnText: { fontSize: 11, fontWeight: "500" as const },
-  rightActions: { alignItems: "center", gap: 12 },
+  answerCtaText: {
+    fontSize: 14,
+    fontWeight: "700" as const,
+  },
+  actionsRow: { alignItems: "center", gap: 16 },
   actionBtn: { alignItems: "center", gap: 4 },
   actionCount: { fontSize: 13 },
   timestamp: { fontSize: 10 },

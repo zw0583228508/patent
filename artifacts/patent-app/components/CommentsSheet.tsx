@@ -58,7 +58,11 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
 
   useEffect(() => {
     if (visible) {
-      Animated.spring(slideAnim, { toValue: 1, tension: 65, friction: 11, useNativeDriver: true }).start();
+      Animated.spring(slideAnim, { toValue: 1, tension: 65, friction: 11, useNativeDriver: true }).start(() => {
+        if (isQuestion) {
+          setTimeout(() => inputRef.current?.focus(), 100);
+        }
+      });
     } else {
       Animated.timing(slideAnim, { toValue: 0, duration: 220, useNativeDriver: true }).start();
     }
