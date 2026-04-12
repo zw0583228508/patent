@@ -12,6 +12,7 @@ export type Comment = {
   text: string;
   timestamp: string;
   likeCount: number;
+  images?: string[];
 };
 
 export type Tip = {
@@ -34,6 +35,7 @@ export type Tip = {
   isTrending?: boolean;
   timestamp: string;
   repostedBy?: string;
+  images?: string[];
 };
 
 export type Question = {

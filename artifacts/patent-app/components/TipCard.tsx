@@ -4,13 +4,17 @@ import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Animated,
+  Dimensions,
+  Modal,
   Platform,
+  ScrollView,
   Share,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { Image } from "expo-image";
 
 import CollectionPickerModal from "@/components/CollectionPickerModal";
 import CommentsSheet from "@/components/CommentsSheet";
@@ -46,6 +50,7 @@ export default function TipCard({ tip, index = 0 }: Props) {
   const [showComments, setShowComments] = useState(false);
   const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
+  const [lightboxUri, setLightboxUri] = useState<string | null>(null);
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
   const slideAnim = React.useRef(new Animated.Value(16)).current;
@@ -206,6 +211,29 @@ export default function TipCard({ tip, index = 0 }: Props) {
           onTranslated={setTranslatedText}
         />
 
+        {tip.images && tip.images.length > 0 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.mediaScroll}
+            contentContainerStyle={[styles.mediaScrollContent, tip.images.length === 1 && { width: "100%" }]}
+          >
+            {tip.images.map((uri, idx) => (
+              <TouchableOpacity
+                key={idx}
+                onPress={() => setLightboxUri(uri)}
+                activeOpacity={0.9}
+                style={[
+                  styles.mediaThumb,
+                  tip.images!.length === 1 && styles.mediaThumbSingle,
+                ]}
+              >
+                <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" />
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        )}
+
         <View style={[styles.voteRow, { flexDirection: dir }]}>
           <Animated.View style={{ flex: 1, transform: [{ scale: scaleWorked }] }}>
             <TouchableOpacity
@@ -315,6 +343,30 @@ export default function TipCard({ tip, index = 0 }: Props) {
         postId={tip.id}
         onClose={() => setShowCollectionPicker(false)}
       />
+      <Modal
+        visible={lightboxUri !== null}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setLightboxUri(null)}
+        statusBarTranslucent
+      >
+        <TouchableOpacity
+          style={styles.lightboxBg}
+          activeOpacity={1}
+          onPress={() => setLightboxUri(null)}
+        >
+          {lightboxUri && (
+            <Image
+              source={{ uri: lightboxUri }}
+              style={styles.lightboxImage}
+              contentFit="contain"
+            />
+          )}
+          <TouchableOpacity style={styles.lightboxClose} onPress={() => setLightboxUri(null)}>
+            <Feather name="x" size={22} color="white" />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </>
   );
 }
@@ -359,4 +411,38 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(64,224,64,0.08)", marginBottom: -6,
   },
   repostBannerText: { fontSize: 11, fontWeight: "500" as const },
+  mediaScroll: { marginTop: 2 },
+  mediaScrollContent: { gap: 6 },
+  mediaThumb: {
+    width: 160,
+    height: 160,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: "#1c1c27",
+  },
+  mediaThumbSingle: {
+    width: "100%",
+    height: 220,
+  },
+  lightboxBg: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.92)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  lightboxImage: {
+    width: Dimensions.get("window").width,
+    height: Dimensions.get("window").height * 0.8,
+  },
+  lightboxClose: {
+    position: "absolute",
+    top: 52,
+    right: 20,
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "rgba(255,255,255,0.15)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

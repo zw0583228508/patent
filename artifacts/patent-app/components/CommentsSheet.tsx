@@ -9,6 +9,7 @@ import {
   Modal,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -17,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Image } from "expo-image";
 import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
 import TranslateButton from "@/components/TranslateButton";
 import { useAuth } from "@/context/AuthContext";
@@ -26,6 +28,7 @@ import { useToast } from "@/context/ToastContext";
 import { Comment } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 import { api } from "@/utils/api";
+import { uploadImages } from "@/utils/upload";
 
 function formatCount(n: number): string {
   if (n >= 1000) return `${(n / 1000).toFixed(1)}k`;
@@ -74,19 +77,24 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const dir = isRTL ? "row-reverse" : "row";
   const textAlign = isRTL ? "right" : "left";
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!text.trim() && media.length === 0) return;
     if (!isLoggedIn) {
       setShowLoginModal(true);
       return;
     }
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    addComment(itemId, text.trim());
     const commentText = text.trim();
+    const localUris = media.map((m) => m.uri);
+    addComment(itemId, commentText, localUris);
     setText("");
     setMedia([]);
     showToast(t("toastCommentAdded"), "success", "message-circle");
-    if (user && commentText) {
+    if (user) {
+      let imageUrls = localUris;
+      if (localUris.length > 0) {
+        imageUrls = await uploadImages(localUris).catch(() => localUris);
+      }
       api.comments.create({
         id: "cmt_" + Date.now() + Math.random().toString(36).slice(2, 7),
         postId: itemId,
@@ -127,6 +135,15 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
           <Text style={[styles.commentText, { color: "#c0c0d8", textAlign }]}>
             {translated ?? item.text}
           </Text>
+          {item.images && item.images.length > 0 && (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginTop: 6 }} contentContainerStyle={{ gap: 6 }}>
+              {item.images.map((uri, idx) => (
+                <View key={idx} style={[styles.commentImg, item.images!.length === 1 && styles.commentImgSingle]}>
+                  <Image source={{ uri }} style={StyleSheet.absoluteFill} contentFit="cover" />
+                </View>
+              ))}
+            </ScrollView>
+          )}
           <View style={[styles.commentActions, { flexDirection: dir }]}>
             <TranslateButton
               text={item.text}
@@ -256,6 +273,17 @@ const styles = StyleSheet.create({
   commentActions: { alignItems: "center", gap: 12, marginTop: 2 },
   commentLikeRow: { alignItems: "center", gap: 4 },
   commentLikeCount: { fontSize: 11 },
+  commentImg: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
+    overflow: "hidden",
+    backgroundColor: "#1c1c27",
+  },
+  commentImgSingle: {
+    width: 200,
+    height: 150,
+  },
   emptyComments: { alignItems: "center", paddingVertical: 40, gap: 12 },
   emptyText: { fontSize: 14 },
   inputArea: { paddingHorizontal: 12, paddingTop: 10, borderTopWidth: 1, gap: 8 },

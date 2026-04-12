@@ -75,13 +75,14 @@ export default function PostScreen() {
     if (!text.trim() && media.length === 0) return;
     if (Platform.OS !== "web")
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    const localPost = addPost(postType, text.trim(), category);
+    const localUris = media.map((m) => m.uri);
+    const localPost = addPost(postType, text.trim(), category, localUris);
     showToast(t("toastPostPublished"), "success", "zap");
     router.back();
     if (user && localPost) {
-      let imageUrls: string[] = [];
+      let imageUrls: string[] = localUris;
       if (media.length > 0) {
-        imageUrls = await uploadImages(media.map((m) => m.uri)).catch(() => []);
+        imageUrls = await uploadImages(localUris).catch(() => localUris);
       }
       api.posts.create({
         id: localPost.id,

@@ -20,8 +20,8 @@ type FeedContextType = {
   toggleSave: (id: string) => void;
   toggleLike: (id: string) => void;
   toggleRepost: (item: FeedItem) => void;
-  addComment: (itemId: string, text: string) => void;
-  addPost: (type: "tip" | "question", text: string, categoryId: string) => FeedItem;
+  addComment: (itemId: string, text: string, images?: string[]) => void;
+  addPost: (type: "tip" | "question", text: string, categoryId: string, images?: string[]) => FeedItem;
   activeCategory: string;
   setActiveCategory: (cat: string) => void;
   visibleCount: number;
@@ -100,7 +100,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function addComment(itemId: string, text: string) {
+  function addComment(itemId: string, text: string, images?: string[]) {
     const newComment: Comment = {
       id: Date.now().toString() + Math.random().toString(36).substr(2, 6),
       author: "יובל כהן",
@@ -109,6 +109,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
       text,
       timestamp: "עכשיו",
       likeCount: 0,
+      images: images ?? [],
     };
     setComments((prev) => {
       const next = { ...prev, [itemId]: [newComment, ...(prev[itemId] ?? [])] };
@@ -143,7 +144,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
-  function addPost(type: "tip" | "question", text: string, categoryId: string) {
+  function addPost(type: "tip" | "question", text: string, categoryId: string, images?: string[]) {
     const id = "post_" + Date.now() + Math.random().toString(36).substr(2, 6);
     const cat = CATEGORY_META[categoryId] ?? { label: "בית", icon: "home" };
 
@@ -157,6 +158,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         text,
         workedCount: 0, didntWorkCount: 0, commentCount: 0, likeCount: 0,
         trustScore: 96, timestamp: "עכשיו",
+        images: images ?? [],
       } as Tip;
     } else {
       newItem = {
