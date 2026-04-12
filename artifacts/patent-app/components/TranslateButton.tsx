@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity } from "react-native";
 
 import { useSettings } from "@/context/SettingsContext";
 import { useColors } from "@/hooks/useColors";
@@ -17,6 +17,7 @@ export default function TranslateButton({ text, onTranslated, isTranslated }: Pr
   const { t, langCode, isRTL } = useSettings();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [retries, setRetries] = useState(0);
 
   async function handlePress() {
     if (isTranslated) {
@@ -24,21 +25,45 @@ export default function TranslateButton({ text, onTranslated, isTranslated }: Pr
       setError(false);
       return;
     }
+    if (loading) return;
     setLoading(true);
     setError(false);
     try {
       const result = await translateText(text, langCode);
+      setRetries(0);
       onTranslated(result);
     } catch {
       setError(true);
+      setRetries((r) => r + 1);
     } finally {
       setLoading(false);
     }
   }
 
+  const dir = isRTL ? "row-reverse" : "row";
+
+  let label: string;
+  let iconColor: string;
+  let icon: "globe" | "alert-circle" | "refresh-cw" = "globe";
+
+  if (loading) {
+    label = t("translating");
+    iconColor = colors.accentCyan;
+  } else if (error) {
+    label = retries >= 2 ? t("translateError") : `${t("translateError")} — ${t("translate")}?`;
+    iconColor = colors.accentRed;
+    icon = "refresh-cw";
+  } else if (isTranslated) {
+    label = t("showOriginal");
+    iconColor = colors.accentCyan;
+  } else {
+    label = t("translate");
+    iconColor = colors.accentCyan;
+  }
+
   return (
     <TouchableOpacity
-      style={[styles.btn, { flexDirection: isRTL ? "row-reverse" : "row" }]}
+      style={[styles.btn, { flexDirection: dir }]}
       onPress={handlePress}
       disabled={loading}
       testID="translate-btn"
@@ -46,11 +71,9 @@ export default function TranslateButton({ text, onTranslated, isTranslated }: Pr
       {loading ? (
         <ActivityIndicator size={11} color={colors.accentCyan} />
       ) : (
-        <Feather name="globe" size={11} color={error ? colors.accentRed : colors.accentCyan} />
+        <Feather name={icon} size={11} color={iconColor} />
       )}
-      <Text style={[styles.label, { color: error ? colors.accentRed : colors.accentCyan }]}>
-        {loading ? t("translating") : error ? t("translateError") : isTranslated ? t("showOriginal") : t("translate")}
-      </Text>
+      <Text style={[styles.label, { color: iconColor }]}>{label}</Text>
     </TouchableOpacity>
   );
 }
