@@ -116,7 +116,7 @@ export default function PrivacyScreen() {
             </View>
 
             <SectionHeading num="1" title="General" />
-            <Para text="Windot ("we", "the Company") operates the Patent application ("the App"). This Privacy Policy explains how we collect, use, and protect your information." />
+            <Para text={`Windot ("we", "the Company") operates the Patent application ("the App"). This Privacy Policy explains how we collect, use, and protect your information.`} />
 
             <SectionHeading num="2" title="Information We Collect" />
             <Para text="Information you provide us:" bold />
