@@ -71,12 +71,13 @@ function closePopupPage(origin: string, token: string | null, error: string | nu
 
 router.get("/google", (req, res) => {
   const origin = String(req.query.origin ?? "");
-  const redirectUri = buildCallbackUri(req);
+  const callbackOverride = req.query.callback ? String(req.query.callback) : null;
+  const redirectUri = callbackOverride ?? buildCallbackUri(req);
   const oauth2 = makeOAuth2(redirectUri);
   const url = oauth2.generateAuthUrl({
     access_type: "offline",
     scope: ["email", "profile", "openid"],
-    state: Buffer.from(JSON.stringify({ origin })).toString("base64url"),
+    state: Buffer.from(JSON.stringify({ origin, redirectUri })).toString("base64url"),
     prompt: "select_account",
   });
   res.redirect(url);
@@ -138,6 +139,30 @@ router.post("/google/token", async (req, res) => {
   } catch (err: any) {
     console.error("Token exchange error:", err?.message ?? err);
     res.status(500).json({ error: "Authentication failed" });
+  }
+});
+
+router.post("/google/exchange-code", async (req, res) => {
+  const { code, redirectUri } = req.body as { code?: string; redirectUri?: string };
+  if (!code || !redirectUri) return res.status(400).json({ error: "code and redirectUri required" });
+
+  try {
+    const oauth2 = makeOAuth2(redirectUri);
+    const { tokens } = await oauth2.getToken(code);
+    oauth2.setCredentials(tokens);
+
+    const oauth2Api = google.oauth2({ version: "v2", auth: oauth2 });
+    const { data: gUser } = await oauth2Api.userinfo.get();
+
+    if (!gUser.id || !gUser.email) return res.status(400).json({ error: "Could not get user info from Google" });
+
+    const name = gUser.name ?? gUser.email.split("@")[0];
+    const user = await upsertGoogleUser(gUser.id, name, gUser.email);
+    const token = signJwt(user.id, user.name, gUser.email, gUser.picture);
+    res.json({ token });
+  } catch (err: any) {
+    console.error("Code exchange error:", err?.message ?? err);
+    res.status(500).json({ error: "Code exchange failed" });
   }
 });
 
