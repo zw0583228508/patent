@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 
+import CollectionPickerModal from "@/components/CollectionPickerModal";
 import CommentsSheet from "@/components/CommentsSheet";
 import TranslateButton from "@/components/TranslateButton";
 import { useAuth } from "@/context/AuthContext";
@@ -43,6 +44,7 @@ export default function TipCard({ tip, index = 0 }: Props) {
   const reposted = repostedIds.has(originalId) || tip.repostedBy === "אני";
   const following = isFollowing(tip.userId);
   const [showComments, setShowComments] = useState(false);
+  const [showCollectionPicker, setShowCollectionPicker] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
 
   const fadeAnim = React.useRef(new Animated.Value(0)).current;
@@ -284,7 +286,7 @@ export default function TipCard({ tip, index = 0 }: Props) {
 
           <TouchableOpacity
             style={styles.actionBtn}
-            onPress={() => requireAuth(() => { toggleSave(tip.id); showToast(saved ? t("toastUnsaved") : t("toastSaved"), "success", "bookmark"); })}
+            onPress={() => requireAuth(() => setShowCollectionPicker(true))}
             testID={`save-${tip.id}`}
           >
             <Feather name="bookmark" size={16} color={saved ? colors.primary : colors.mutedForeground} />
@@ -307,6 +309,11 @@ export default function TipCard({ tip, index = 0 }: Props) {
         itemId={tip.id}
         itemText={tip.text}
         onClose={() => setShowComments(false)}
+      />
+      <CollectionPickerModal
+        visible={showCollectionPicker}
+        postId={tip.id}
+        onClose={() => setShowCollectionPicker(false)}
       />
     </>
   );

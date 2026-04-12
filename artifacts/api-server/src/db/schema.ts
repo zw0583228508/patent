@@ -134,6 +134,33 @@ export const follows = pgTable(
   ],
 );
 
+export const collections = pgTable(
+  "collections",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    icon: text("icon").notNull().default("bookmark"),
+    color: text("color").notNull().default("#f0e040"),
+    postsCount: integer("posts_count").default(0),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [
+    index("idx_collections_user_id").on(t.userId),
+  ],
+);
+
+export const collectionPosts = pgTable(
+  "collection_posts",
+  {
+    collectionId: text("collection_id").notNull().references(() => collections.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.collectionId, t.postId] })],
+);
+
 export const notifications = pgTable(
   "notifications",
   {

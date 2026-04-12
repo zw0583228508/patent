@@ -77,7 +77,13 @@ export type TKeys =
   | "share" | "viewProfile" | "loadMore" | "noMoreItems"
   | "users" | "searchUsers" | "noUsersFound"
   | "privacyPolicy" | "termsOfService" | "legalSection" | "aboutApp" | "appVersion"
-  | "userNotFound" | "tipsByUser";
+  | "userNotFound" | "tipsByUser"
+  | "tabCollections" | "collections" | "myCollections" | "newCollection"
+  | "collectionName" | "createCollection" | "saveToCollection"
+  | "noCollections" | "collectionEmpty" | "deleteCollection" | "editCollection"
+  | "collectionCreated" | "collectionDeleted" | "addedToCollection" | "removedFromCollection"
+  | "chooseCollection" | "createNewCollection" | "collectionNamePlaceholder"
+  | "collectionPosts" | "renameCollection" | "iconAndColor";
 
 export type Translations = Record<TKeys, string>;
 
@@ -133,6 +139,15 @@ const t: Record<string, Partial<Translations>> = {
     privacyPolicy: "מדיניות פרטיות", termsOfService: "תנאי שימוש",
     legalSection: "משפטי", aboutApp: "אודות Patent", appVersion: "גרסה",
     userNotFound: "משתמש לא נמצא", tipsByUser: "טיפים",
+    tabCollections: "אוספים", collections: "אוספים", myCollections: "האוספים שלי",
+    newCollection: "אוסף חדש", collectionName: "שם האוסף", createCollection: "צור אוסף",
+    saveToCollection: "שמור באוסף", noCollections: "אין לך אוספים עדיין",
+    collectionEmpty: "האוסף ריק", deleteCollection: "מחק אוסף", editCollection: "ערוך אוסף",
+    collectionCreated: "האוסף נוצר!", collectionDeleted: "האוסף נמחק",
+    addedToCollection: "נוסף לאוסף!", removedFromCollection: "הוסר מהאוסף",
+    chooseCollection: "בחר אוסף", createNewCollection: "צור אוסף חדש",
+    collectionNamePlaceholder: "לדוגמה: חיסכון, אוכל בריא...",
+    collectionPosts: "טיפים באוסף", renameCollection: "שנה שם", iconAndColor: "צבע וסמל",
   },
   en: {
     appName: "Patent",
@@ -185,6 +200,15 @@ const t: Record<string, Partial<Translations>> = {
     privacyPolicy: "Privacy Policy", termsOfService: "Terms of Service",
     legalSection: "Legal", aboutApp: "About Patent", appVersion: "Version",
     userNotFound: "User not found", tipsByUser: "Tips",
+    tabCollections: "Collections", collections: "Collections", myCollections: "My Collections",
+    newCollection: "New Collection", collectionName: "Collection Name", createCollection: "Create Collection",
+    saveToCollection: "Save to Collection", noCollections: "No collections yet",
+    collectionEmpty: "This collection is empty", deleteCollection: "Delete Collection", editCollection: "Edit Collection",
+    collectionCreated: "Collection created!", collectionDeleted: "Collection deleted",
+    addedToCollection: "Added to collection!", removedFromCollection: "Removed from collection",
+    chooseCollection: "Choose Collection", createNewCollection: "Create New Collection",
+    collectionNamePlaceholder: "e.g. Savings, Healthy Food...",
+    collectionPosts: "Tips in Collection", renameCollection: "Rename", iconAndColor: "Icon & Color",
   },
   ar: {
     appName: "Patent",

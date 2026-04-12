@@ -122,6 +122,28 @@ export const api = {
       request<{ success: boolean }>("/notifications/read-all", { method: "POST", body: JSON.stringify({ userId }) }),
   },
 
+  collections: {
+    list: () => request<ApiCollection[]>("/collections"),
+    create: (body: { name: string; icon?: string; color?: string }) =>
+      request<ApiCollection>("/collections", { method: "POST", body: JSON.stringify(body) }),
+    update: (id: string, body: { name?: string; icon?: string; color?: string }) =>
+      request<ApiCollection>(`/collections/${id}`, { method: "PUT", body: JSON.stringify(body) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/collections/${id}`, { method: "DELETE", body: "{}" }),
+    check: (postId: string) =>
+      request<{ collectionIds: string[] }>(`/collections/check/${postId}`),
+    addPost: (id: string, postId: string) =>
+      request<{ added: boolean }>(`/collections/${id}/posts`, { method: "POST", body: JSON.stringify({ postId }) }),
+    removePost: (id: string, postId: string) =>
+      request<{ removed: boolean }>(`/collections/${id}/posts/${postId}`, { method: "DELETE", body: "{}" }),
+    getPosts: (id: string, params?: { limit?: number; offset?: number }) => {
+      const query = new URLSearchParams();
+      if (params?.limit != null) query.set("limit", String(params.limit));
+      if (params?.offset != null) query.set("offset", String(params.offset));
+      return request<{ collection: ApiCollection; data: ApiCollectionPost[]; hasMore: boolean }>(`/collections/${id}/posts?${query}`);
+    },
+  },
+
   comments: {
     list: (postId: string, params?: { limit?: number; offset?: number }) => {
       const query = new URLSearchParams();
@@ -219,6 +241,22 @@ export interface CreateCommentBody {
   postId: string;
   authorId: string;
   content: string;
+}
+
+export interface ApiCollection {
+  id: string;
+  userId: string;
+  name: string;
+  icon: string;
+  color: string;
+  postsCount: number;
+  createdAt: string;
+}
+
+export interface ApiCollectionPost {
+  post: ApiPost;
+  author: ApiUserPublic;
+  savedAt: string;
 }
 
 export interface UpsertUserBody {

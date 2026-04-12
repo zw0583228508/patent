@@ -346,6 +346,18 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
+        name="collections"
+        options={{
+          title: t("tabCollections"),
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="folder" tintColor={color} size={24} />
+            ) : (
+              <Feather name="folder" size={22} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: t("tabProfile"),
