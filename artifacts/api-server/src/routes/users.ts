@@ -48,6 +48,25 @@ router.post("/upsert", async (req, res) => {
   }
 });
 
+router.post("/:id/notif-prefs", async (req, res) => {
+  try {
+    const { notifComments, notifLikes, notifFollows, notifVotes } = req.body;
+    const update: Partial<typeof users.$inferInsert> = {};
+    if (notifComments !== undefined) update.notifComments = Boolean(notifComments);
+    if (notifLikes !== undefined) update.notifLikes = Boolean(notifLikes);
+    if (notifFollows !== undefined) update.notifFollows = Boolean(notifFollows);
+    if (notifVotes !== undefined) update.notifVotes = Boolean(notifVotes);
+
+    if (Object.keys(update).length === 0) return res.status(400).json({ error: "No prefs to update" });
+
+    await db.update(users).set(update).where(eq(users.id, req.params.id));
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update notif prefs" });
+  }
+});
+
 router.post("/:id/push-token", async (req, res) => {
   try {
     const { token } = req.body;
@@ -129,9 +148,11 @@ router.post("/:id/follow", async (req, res) => {
 
     const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, followerId));
     sendPushToUser(req.params.id, {
+      type: "follow",
       title: "👤 עוקב חדש",
       body: `${actor?.name ?? "מישהו"} החל לעקוב אחרייך`,
       data: { type: "follow", followerId },
+      actorId: followerId,
     });
   } catch (err) {
     console.error(err);

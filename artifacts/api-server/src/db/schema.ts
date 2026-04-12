@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgTable,
   primaryKey,
   text,
@@ -21,6 +22,10 @@ export const users = pgTable("users", {
   followingCount: integer("following_count").default(0),
   pushToken: text("push_token"),
   pushTokenUpdatedAt: timestamp("push_token_updated_at", { withTimezone: true }),
+  notifComments: boolean("notif_comments").default(true),
+  notifLikes: boolean("notif_likes").default(true),
+  notifFollows: boolean("notif_follows").default(true),
+  notifVotes: boolean("notif_votes").default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 
@@ -60,9 +65,7 @@ export const posts = pgTable(
 export const postLikes = pgTable(
   "post_likes",
   {
-    postId: text("post_id")
-      .notNull()
-      .references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
@@ -72,9 +75,7 @@ export const postLikes = pgTable(
 export const postSaves = pgTable(
   "post_saves",
   {
-    postId: text("post_id")
-      .notNull()
-      .references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
@@ -84,9 +85,7 @@ export const postSaves = pgTable(
 export const postVotes = pgTable(
   "post_votes",
   {
-    postId: text("post_id")
-      .notNull()
-      .references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
     userId: text("user_id").notNull(),
     vote: integer("vote").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -98,12 +97,8 @@ export const comments = pgTable(
   "comments",
   {
     id: text("id").primaryKey(),
-    postId: text("post_id")
-      .notNull()
-      .references(() => posts.id, { onDelete: "cascade" }),
-    authorId: text("author_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    authorId: text("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
     likesCount: integer("likes_count").default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -123,4 +118,21 @@ export const follows = pgTable(
     index("idx_follows_follower").on(t.followerId),
     index("idx_follows_following").on(t.followingId),
   ],
+);
+
+export const notifications = pgTable(
+  "notifications",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    title: text("title").notNull(),
+    body: text("body").notNull(),
+    data: jsonb("data").default({}),
+    isRead: boolean("is_read").default(false),
+    actorId: text("actor_id"),
+    postId: text("post_id"),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [index("idx_notifications_user_id").on(t.userId, t.createdAt)],
 );

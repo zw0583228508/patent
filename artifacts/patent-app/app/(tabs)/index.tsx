@@ -1,8 +1,9 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
   Platform,
   StyleSheet,
@@ -14,11 +15,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import QuestionCard from "@/components/QuestionCard";
 import TipCard from "@/components/TipCard";
+import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useSocial } from "@/context/SocialContext";
 import { CATEGORIES, FeedItem, Question, Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
+import { api } from "@/utils/api";
 
 type FeedMode = "forYou" | "following" | "all";
 
@@ -48,8 +51,26 @@ export default function FeedScreen() {
   const { items, activeCategory, setActiveCategory, visibleCount, loadMore, hasMore, resetPagination } = useFeed();
   const { t, isRTL, followedTopics } = useSettings();
   const social = useSocial();
+  const { user } = useAuth();
   const [feedMode, setFeedMode] = useState<FeedMode>("forYou");
   const [loadingMore, setLoadingMore] = useState(false);
+  const [unreadNotifs, setUnreadNotifs] = useState(0);
+  const bellAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    if (!user?.id) return;
+    api.notifications.list(user.id, { limit: 1 }).then((res) => {
+      setUnreadNotifs(res.unreadCount);
+    }).catch(() => {});
+  }, [user?.id]);
+
+  function handleBellPress() {
+    Animated.sequence([
+      Animated.timing(bellAnim, { toValue: 1.3, duration: 80, useNativeDriver: true }),
+      Animated.spring(bellAnim, { toValue: 1, useNativeDriver: true }),
+    ]).start();
+    router.push("/notifications");
+  }
 
   useEffect(() => {
     resetPagination();
@@ -104,8 +125,15 @@ export default function FeedScreen() {
       <View style={[styles.header, { paddingTop: topPad + 8, flexDirection: dir }]}>
         <Text style={[styles.logo, { color: colors.primary }]}>{t("appName")}</Text>
         <View style={[styles.headerIcons, { flexDirection: dir }]}>
-          <TouchableOpacity style={styles.iconBtn} testID="notifications-btn">
-            <Feather name="bell" size={22} color={colors.foreground} />
+          <TouchableOpacity style={styles.iconBtn} onPress={handleBellPress} testID="notifications-btn">
+            <Animated.View style={{ transform: [{ scale: bellAnim }] }}>
+              <Feather name="bell" size={22} color={unreadNotifs > 0 ? colors.primary : colors.foreground} />
+            </Animated.View>
+            {unreadNotifs > 0 && (
+              <View style={[styles.badge, { backgroundColor: colors.accentPink }]}>
+                <Text style={styles.badgeText}>{unreadNotifs > 99 ? "99+" : String(unreadNotifs)}</Text>
+              </View>
+            )}
           </TouchableOpacity>
           <TouchableOpacity style={styles.iconBtn} onPress={() => router.push("/(tabs)/search")} testID="search-btn">
             <Feather name="search" size={22} color={colors.foreground} />
@@ -209,7 +237,15 @@ const styles = StyleSheet.create({
   },
   logo: { fontSize: 26, fontWeight: "800" as const, letterSpacing: -0.5 },
   headerIcons: { gap: 4 },
-  iconBtn: { padding: 8 },
+  iconBtn: { padding: 8, position: "relative" },
+  badge: {
+    position: "absolute",
+    top: 4, right: 4,
+    minWidth: 16, height: 16, borderRadius: 8,
+    alignItems: "center", justifyContent: "center",
+    paddingHorizontal: 3,
+  },
+  badgeText: { color: "#fff", fontSize: 9, fontWeight: "700" as const },
   feedTabs: { borderBottomWidth: 1, paddingHorizontal: 4 },
   feedTab: {
     flex: 1, alignItems: "center", paddingVertical: 10,

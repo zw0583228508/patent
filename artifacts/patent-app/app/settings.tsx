@@ -14,10 +14,12 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import { CATEGORIES } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 import { LANGUAGES } from "@/i18n/translations";
+import { api } from "@/utils/api";
 
 type Section = "main" | "language";
 
@@ -41,7 +43,15 @@ export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, langCode, setLangCode, isRTL, notifs, setNotif, followedTopics, toggleTopic } = useSettings();
+  const { user } = useAuth();
   const [section, setSection] = useState<Section>("main");
+
+  function handleNotifToggle(key: "answers" | "comments" | "topics", val: boolean) {
+    setNotif(key, val);
+    if (!user?.id) return;
+    if (key === "answers") api.users.saveNotifPrefs(user.id, { notifVotes: val }).catch(() => {});
+    if (key === "comments") api.users.saveNotifPrefs(user.id, { notifComments: val }).catch(() => {});
+  }
   const [langSearch, setLangSearch] = useState("");
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const dir = isRTL ? "row-reverse" : "row";
@@ -147,7 +157,7 @@ export default function SettingsScreen() {
             label={t("notifyAnswers")}
             desc={t("notifyAnswersDesc")}
             value={notifs.answers}
-            onToggle={(v) => setNotif("answers", v)}
+            onToggle={(v) => handleNotifToggle("answers", v)}
             isRTL={isRTL}
             colors={colors}
             testID="notif-answers"
@@ -157,7 +167,7 @@ export default function SettingsScreen() {
             label={t("notifyComments")}
             desc={t("notifyCommentsDesc")}
             value={notifs.comments}
-            onToggle={(v) => setNotif("comments", v)}
+            onToggle={(v) => handleNotifToggle("comments", v)}
             isRTL={isRTL}
             colors={colors}
             testID="notif-comments"
@@ -167,7 +177,7 @@ export default function SettingsScreen() {
             label={t("notifyTopics")}
             desc={t("notifyTopicsDesc")}
             value={notifs.topics}
-            onToggle={(v) => setNotif("topics", v)}
+            onToggle={(v) => handleNotifToggle("topics", v)}
             isRTL={isRTL}
             colors={colors}
             testID="notif-topics"

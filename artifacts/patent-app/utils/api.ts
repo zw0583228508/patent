@@ -80,6 +80,21 @@ export const api = {
     getFollowing: (id: string) => request<ApiUser[]>(`/users/${id}/following`),
     savePushToken: (id: string, token: string) =>
       request<{ success: boolean }>(`/users/${id}/push-token`, { method: "POST", body: JSON.stringify({ token }) }),
+    saveNotifPrefs: (id: string, prefs: { notifComments?: boolean; notifLikes?: boolean; notifFollows?: boolean; notifVotes?: boolean }) =>
+      request<{ success: boolean }>(`/users/${id}/notif-prefs`, { method: "POST", body: JSON.stringify(prefs) }),
+  },
+
+  notifications: {
+    list: (userId: string, params?: { limit?: number; offset?: number }) => {
+      const query = new URLSearchParams({ userId });
+      if (params?.limit != null) query.set("limit", String(params.limit));
+      if (params?.offset != null) query.set("offset", String(params.offset));
+      return request<{ data: ApiNotification[]; unreadCount: number }>(`/notifications?${query}`);
+    },
+    markRead: (id: string) =>
+      request<{ success: boolean }>(`/notifications/${id}/read`, { method: "POST", body: "{}" }),
+    markAllRead: (userId: string) =>
+      request<{ success: boolean }>("/notifications/read-all", { method: "POST", body: JSON.stringify({ userId }) }),
   },
 
   comments: {
@@ -158,6 +173,20 @@ export interface CreatePostBody {
   categoryId: string;
   images?: string[];
   tags?: string[];
+}
+
+export interface ApiNotification {
+  id: string;
+  userId: string;
+  type: "like" | "comment" | "follow" | "vote";
+  title: string;
+  body: string;
+  data: Record<string, unknown>;
+  isRead: boolean;
+  actorId: string | null;
+  postId: string | null;
+  createdAt: string;
+  actor?: ApiUserPublic | null;
 }
 
 export interface CreateCommentBody {

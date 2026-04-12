@@ -44,9 +44,12 @@ router.post("/", async (req, res) => {
     const [post] = await db.select({ authorId: posts.authorId, title: posts.title }).from(posts).where(eq(posts.id, postId));
     if (post && post.authorId !== authorId) {
       sendPushToUser(post.authorId, {
+        type: "comment",
         title: "💬 תגובה חדשה",
         body: `${author?.name ?? "מישהו"} הגיב על הפוסט שלך: "${content.slice(0, 80)}"`,
         data: { type: "comment", postId, commentId: id },
+        actorId: authorId,
+        postId,
       });
     }
   } catch (err) {

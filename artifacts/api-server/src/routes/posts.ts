@@ -134,9 +134,12 @@ router.post("/:id/like", async (req, res) => {
     const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
     if (post && post.authorId !== userId) {
       sendPushToUser(post.authorId, {
+        type: "like",
         title: "❤️ לייק חדש",
         body: `${actor?.name ?? "מישהו"} אהב את הפוסט שלך: "${post.title.slice(0, 60)}"`,
         data: { type: "like", postId: req.params.id },
+        actorId: userId,
+        postId: req.params.id,
       });
     }
   } catch (err) {
@@ -204,9 +207,12 @@ router.post("/:id/vote", async (req, res) => {
       const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
       if (post && post.authorId !== userId) {
         sendPushToUser(post.authorId, {
+          type: "vote",
           title: "👍 הצבעה חיובית",
           body: `${actor?.name ?? "מישהו"} הצביע בעד הפוסט שלך: "${post.title.slice(0, 60)}"`,
           data: { type: "vote", postId: req.params.id, vote: 1 },
+          actorId: userId,
+          postId: req.params.id,
         });
       }
     }
