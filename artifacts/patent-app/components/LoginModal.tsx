@@ -64,6 +64,7 @@ export default function LoginModal() {
     if (typeof window === "undefined") return;
     function onMessage(e: MessageEvent) {
       if (e.data?.type === "PATENT_SSO_DONE") {
+        abortedRef.current = true;
         resetLoading();
         setShowLoginModal(false);
       }
@@ -102,9 +103,18 @@ export default function LoginModal() {
         await result.setActive!({ session: result.createdSessionId });
         resetLoading();
         setShowLoginModal(false);
-      } else if (result.signUp?.status === "missing_requirements" || result.signUp?.status === "complete") {
+      } else if (
+        result.signUp?.status === "missing_requirements" ||
+        result.signUp?.status === "complete" ||
+        (result.signIn as any)?.status === "complete"
+      ) {
+        if (result.createdSessionId && result.setActive) {
+          await result.setActive({ session: result.createdSessionId });
+        }
         resetLoading();
         setShowLoginModal(false);
+      } else if (Platform.OS === "web") {
+        resetLoading();
       } else {
         resetLoading("ההתחברות לא הושלמה. נסה שוב.");
       }
