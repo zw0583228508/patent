@@ -13,7 +13,9 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 
+import LoginModal from "@/components/LoginModal";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { AuthProvider } from "@/context/AuthContext";
 import { FeedProvider } from "@/context/FeedContext";
 import { SettingsProvider } from "@/context/SettingsContext";
 import { SocialProvider } from "@/context/SocialContext";
@@ -59,15 +61,18 @@ export default function RootLayout() {
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
           <SettingsProvider>
-            <SocialProvider>
-              <FeedProvider>
-                <GestureHandlerRootView style={{ flex: 1 }}>
-                  <KeyboardProvider>
-                    <RootLayoutNav />
-                  </KeyboardProvider>
-                </GestureHandlerRootView>
-              </FeedProvider>
-            </SocialProvider>
+            <AuthProvider>
+              <SocialProvider>
+                <FeedProvider>
+                  <GestureHandlerRootView style={{ flex: 1 }}>
+                    <KeyboardProvider>
+                      <RootLayoutNav />
+                      <LoginModal />
+                    </KeyboardProvider>
+                  </GestureHandlerRootView>
+                </FeedProvider>
+              </SocialProvider>
+            </AuthProvider>
           </SettingsProvider>
         </QueryClientProvider>
       </ErrorBoundary>

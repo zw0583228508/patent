@@ -18,6 +18,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useColors } from "@/hooks/useColors";
 
@@ -31,6 +32,7 @@ function FABSheet({
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useSettings();
+  const { requireAuth } = useAuth();
   const slideAnim = useRef(new Animated.Value(0)).current;
   const scaleA = useRef(new Animated.Value(1)).current;
   const scaleB = useRef(new Animated.Value(1)).current;
@@ -64,16 +66,18 @@ function FABSheet({
   });
 
   function pressOption(type: "tip" | "question", scaleRef: Animated.Value) {
-    Animated.sequence([
-      Animated.timing(scaleRef, {
-        toValue: 0.95,
-        duration: 60,
-        useNativeDriver: true,
-      }),
-      Animated.spring(scaleRef, { toValue: 1, useNativeDriver: true }),
-    ]).start(() => {
-      onClose();
-      setTimeout(() => router.push(`/post?type=${type}`), 120);
+    requireAuth(() => {
+      Animated.sequence([
+        Animated.timing(scaleRef, {
+          toValue: 0.95,
+          duration: 60,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleRef, { toValue: 1, useNativeDriver: true }),
+      ]).start(() => {
+        onClose();
+        setTimeout(() => router.push(`/post?type=${type}`), 120);
+      });
     });
   }
 

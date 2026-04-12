@@ -62,7 +62,11 @@ export type TKeys =
   | "forYou" | "followingFeed" | "follow" | "unfollow" | "followers" | "whoIFollow"
   | "fromCamera" | "fromGallery"
   | "welcomeTitle" | "welcomeSubtitle" | "letsGo" | "skipForNow"
-  | "noFollowing" | "noFollowers" | "exploreUsers";
+  | "noFollowing" | "noFollowers" | "exploreUsers"
+  | "signIn" | "signInRequired" | "signInSubtitle"
+  | "signInWithGoogle" | "signInWithFacebook"
+  | "orContinue" | "continueWithoutAccount" | "authLegal"
+  | "logOut" | "loggedInAs";
 
 export type Translations = Record<TKeys, string>;
 
@@ -96,6 +100,12 @@ const t: Record<string, Translations> = {
     letsGo: "בוא נתחיל", skipForNow: "דלג",
     noFollowing: "עדיין לא עוקב אחרי אף אחד", noFollowers: "עדיין אין לך עוקבים",
     exploreUsers: "גלה אנשים",
+    signIn: "התחברות", signInRequired: "יש להתחבר כדי להמשיך",
+    signInSubtitle: "שמור טיפים, העלה תוכן וצור קשר עם הקהילה",
+    signInWithGoogle: "התחבר עם Google", signInWithFacebook: "התחבר עם Facebook",
+    orContinue: "או", continueWithoutAccount: "המשך בלי חשבון",
+    authLegal: "בהתחברות אתה מסכים לתנאי השימוש ומדיניות הפרטיות",
+    logOut: "התנתק", loggedInAs: "מחובר כ",
   },
   en: {
     appName: "Patent",
@@ -126,6 +136,12 @@ const t: Record<string, Translations> = {
     letsGo: "Let's Go", skipForNow: "Skip",
     noFollowing: "Not following anyone yet", noFollowers: "No followers yet",
     exploreUsers: "Explore People",
+    signIn: "Sign In", signInRequired: "Sign In to Continue",
+    signInSubtitle: "Save tips, post content and connect with the community",
+    signInWithGoogle: "Sign in with Google", signInWithFacebook: "Sign in with Facebook",
+    orContinue: "or", continueWithoutAccount: "Continue without account",
+    authLegal: "By signing in you agree to our Terms of Service and Privacy Policy",
+    logOut: "Log Out", loggedInAs: "Logged in as",
   },
   ar: {
     appName: "Patent",

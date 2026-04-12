@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
 import TranslateButton from "@/components/TranslateButton";
+import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Comment } from "@/data/mockData";
@@ -42,6 +43,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const insets = useSafeAreaInsets();
   const { comments, addComment } = useFeed();
   const { t, isRTL } = useSettings();
+  const { requireAuth } = useAuth();
   const [text, setText] = useState("");
   const [media, setMedia] = useState<MediaAsset[]>([]);
   const slideAnim = useRef(new Animated.Value(0)).current;
@@ -66,10 +68,12 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
 
   function handleSubmit() {
     if (!text.trim() && media.length === 0) return;
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    addComment(itemId, text.trim());
-    setText("");
-    setMedia([]);
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      addComment(itemId, text.trim());
+      setText("");
+      setMedia([]);
+    });
   }
 
   function toggleCommentLike(commentId: string) {

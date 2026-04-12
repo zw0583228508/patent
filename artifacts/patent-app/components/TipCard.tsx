@@ -12,6 +12,7 @@ import {
 
 import CommentsSheet from "@/components/CommentsSheet";
 import TranslateButton from "@/components/TranslateButton";
+import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useSocial } from "@/context/SocialContext";
@@ -30,6 +31,7 @@ export default function TipCard({ tip }: Props) {
   const { t, isRTL } = useSettings();
   const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
   const { follow, unfollow, isFollowing } = useSocial();
+  const { requireAuth } = useAuth();
   const myVote = votes[tip.id];
   const saved = savedIds.has(tip.id);
   const liked = likedIds.has(tip.id);
@@ -53,21 +55,27 @@ export default function TipCard({ tip }: Props) {
   }
 
   function handleVote(v: "worked" | "didnt") {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    animatePress(v === "worked" ? scaleWorked : scaleNot);
-    vote(tip.id, v);
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      animatePress(v === "worked" ? scaleWorked : scaleNot);
+      vote(tip.id, v);
+    });
   }
 
   function handleLike() {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    animatePress(scaleLike);
-    toggleLike(tip.id);
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      animatePress(scaleLike);
+      toggleLike(tip.id);
+    });
   }
 
   function handleFollow() {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (following) unfollow(tip.userId);
-    else follow(tip.userId);
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (following) unfollow(tip.userId);
+      else follow(tip.userId);
+    });
   }
 
   const workedCount = tip.workedCount + (myVote === "worked" ? 1 : 0);
@@ -200,7 +208,7 @@ export default function TipCard({ tip }: Props) {
 
           <TouchableOpacity
             style={styles.actionBtn}
-            onPress={() => toggleSave(tip.id)}
+            onPress={() => requireAuth(() => toggleSave(tip.id))}
             testID={`save-${tip.id}`}
           >
             <Feather name="bookmark" size={16} color={saved ? colors.primary : colors.mutedForeground} />

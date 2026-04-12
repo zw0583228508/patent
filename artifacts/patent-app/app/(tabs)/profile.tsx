@@ -5,6 +5,7 @@ import { FlatList, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, Vie
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TipCard from "@/components/TipCard";
+import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useSocial } from "@/context/SocialContext";
 import { FEED_ITEMS, MOCK_USERS, MockUser, Tip, USER_PROFILE, USER_TIPS } from "@/data/mockData";
@@ -62,6 +63,7 @@ export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useSettings();
   const { followedUsers } = useSocial();
+  const { user: authUser, isLoggedIn, logout, setShowLoginModal } = useAuth();
   const [tab, setTab] = useState<"tips" | "saved" | "following" | "followers">("tips");
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const dir = isRTL ? "row-reverse" : "row";
@@ -103,18 +105,45 @@ export default function ProfileScreen() {
             </View>
 
             <View style={[styles.profileCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-              <View style={[styles.avatarLarge, { backgroundColor: USER_PROFILE.avatarGradient[0] }]}>
-                <Text style={styles.avatarLargeText}>{USER_PROFILE.initials}</Text>
-              </View>
-              <Text style={[styles.name, { color: colors.foreground }]}>{USER_PROFILE.name}</Text>
-              <Text style={[styles.username, { color: colors.mutedForeground }]}>{USER_PROFILE.username}</Text>
-
-              <View style={[styles.expertBadge, { flexDirection: dir, backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
-                <Feather name="award" size={12} color={colors.accentGreen} />
-                <Text style={[styles.expertText, { color: colors.accentGreen }]}>
-                  {t("verifiedExpert")} · {USER_PROFILE.trustScore}%
-                </Text>
-              </View>
+              {isLoggedIn && authUser ? (
+                <>
+                  <View style={[styles.avatarLarge, { backgroundColor: authUser.avatarColor }]}>
+                    <Text style={styles.avatarLargeText}>{authUser.initials}</Text>
+                  </View>
+                  <Text style={[styles.name, { color: colors.foreground }]}>{authUser.name}</Text>
+                  <Text style={[styles.username, { color: colors.mutedForeground }]}>{authUser.email}</Text>
+                  <TouchableOpacity
+                    style={[styles.logoutBtn, { borderColor: colors.border }]}
+                    onPress={logout}
+                    testID="logout-btn"
+                  >
+                    <Feather name="log-out" size={14} color={colors.mutedForeground} />
+                    <Text style={[styles.logoutText, { color: colors.mutedForeground }]}>{t("logOut")}</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <View style={[styles.avatarLarge, { backgroundColor: USER_PROFILE.avatarGradient[0] }]}>
+                    <Text style={styles.avatarLargeText}>{USER_PROFILE.initials}</Text>
+                  </View>
+                  <Text style={[styles.name, { color: colors.foreground }]}>{USER_PROFILE.name}</Text>
+                  <Text style={[styles.username, { color: colors.mutedForeground }]}>{USER_PROFILE.username}</Text>
+                  <View style={[styles.expertBadge, { flexDirection: dir, backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
+                    <Feather name="award" size={12} color={colors.accentGreen} />
+                    <Text style={[styles.expertText, { color: colors.accentGreen }]}>
+                      {t("verifiedExpert")} · {USER_PROFILE.trustScore}%
+                    </Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.signInBtn, { backgroundColor: colors.primary }]}
+                    onPress={() => setShowLoginModal(true)}
+                    testID="profile-sign-in"
+                  >
+                    <Feather name="log-in" size={15} color={colors.primaryForeground} />
+                    <Text style={[styles.signInBtnText, { color: colors.primaryForeground }]}>{t("signIn")}</Text>
+                  </TouchableOpacity>
+                </>
+              )}
             </View>
 
             <View style={[styles.statsRow, { flexDirection: dir }]}>
@@ -237,4 +266,15 @@ const styles = StyleSheet.create({
   },
   followBtnText: { fontSize: 13, fontWeight: "600" as const },
   emptySection: { alignItems: "center", paddingVertical: 40, gap: 12 },
+  signInBtn: {
+    flexDirection: "row", alignItems: "center", gap: 8,
+    borderRadius: 14, paddingHorizontal: 24, paddingVertical: 12, marginTop: 8,
+  },
+  signInBtnText: { fontSize: 15, fontWeight: "700" as const },
+  logoutBtn: {
+    flexDirection: "row", alignItems: "center", gap: 6,
+    borderRadius: 12, paddingHorizontal: 18, paddingVertical: 9,
+    borderWidth: 1, marginTop: 8,
+  },
+  logoutText: { fontSize: 13, fontWeight: "600" as const },
 });

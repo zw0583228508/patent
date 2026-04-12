@@ -12,6 +12,7 @@ import {
 
 import CommentsSheet from "@/components/CommentsSheet";
 import TranslateButton from "@/components/TranslateButton";
+import { useAuth } from "@/context/AuthContext";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useSocial } from "@/context/SocialContext";
@@ -30,6 +31,7 @@ export default function QuestionCard({ question }: Props) {
   const { t, isRTL } = useSettings();
   const { likedIds, comments, toggleLike } = useFeed();
   const { follow, unfollow, isFollowing } = useSocial();
+  const { requireAuth } = useAuth();
   const liked = likedIds.has(question.id);
   const following = isFollowing(question.userId);
   const isMyQuestion = question.userId === "me";
@@ -42,18 +44,22 @@ export default function QuestionCard({ question }: Props) {
   const alignSelf = isRTL ? "flex-end" : "flex-start";
 
   function handleFollow() {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (following) unfollow(question.userId);
-    else follow(question.userId);
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      if (following) unfollow(question.userId);
+      else follow(question.userId);
+    });
   }
 
   function handleLike() {
-    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    Animated.sequence([
-      Animated.timing(scaleLike, { toValue: 0.85, duration: 70, useNativeDriver: true }),
-      Animated.spring(scaleLike, { toValue: 1, useNativeDriver: true }),
-    ]).start();
-    toggleLike(question.id);
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      Animated.sequence([
+        Animated.timing(scaleLike, { toValue: 0.85, duration: 70, useNativeDriver: true }),
+        Animated.spring(scaleLike, { toValue: 1, useNativeDriver: true }),
+      ]).start();
+      toggleLike(question.id);
+    });
   }
 
   const likeCount = question.likeCount + (liked ? 1 : 0);
