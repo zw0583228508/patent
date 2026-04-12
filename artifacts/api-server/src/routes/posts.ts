@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
-import { db, posts, postLikes, postSaves, postVotes, users } from "../db";
+import { db, posts, postLikes, postSaves, postVotes, postReposts, users } from "../db";
 import { sendPushToUser } from "../lib/pushNotifications";
 
 const router = Router();
@@ -227,6 +227,43 @@ router.post("/:id/share", async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: "Failed to record share" });
+  }
+});
+
+router.post("/:id/repost", async (req, res) => {
+  try {
+    const { userId } = req.body;
+    if (!userId) return res.status(400).json({ error: "userId required" });
+
+    const existing = await db
+      .select()
+      .from(postReposts)
+      .where(and(eq(postReposts.postId, req.params.id), eq(postReposts.userId, userId)));
+
+    if (existing.length > 0) {
+      await db.delete(postReposts).where(and(eq(postReposts.postId, req.params.id), eq(postReposts.userId, userId)));
+      await db.update(posts).set({ repostsCount: sql`GREATEST(${posts.repostsCount} - 1, 0)` }).where(eq(posts.id, req.params.id));
+      return res.json({ reposted: false });
+    }
+
+    await db.insert(postReposts).values({ postId: req.params.id, userId });
+    await db.update(posts).set({ repostsCount: sql`${posts.repostsCount} + 1` }).where(eq(posts.id, req.params.id));
+    res.json({ reposted: true });
+
+    const [post] = await db.select({ authorId: posts.authorId, title: posts.title }).from(posts).where(eq(posts.id, req.params.id));
+    const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
+    if (post && post.authorId !== userId) {
+      sendPushToUser(post.authorId, {
+        type: "repost",
+        title: "פורסם מחדש",
+        body: `${actor?.name ?? "מישהו"} פרסם מחדש את הפוסט שלך: "${post.title.slice(0, 60)}"`,
+        data: { type: "repost", postId: req.params.id },
+        actorId: userId,
+        postId: req.params.id,
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ error: "Failed to toggle repost" });
   }
 });
 

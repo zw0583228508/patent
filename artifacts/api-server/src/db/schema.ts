@@ -45,6 +45,7 @@ export const posts = pgTable(
     likesCount: integer("likes_count").default(0),
     savesCount: integer("saves_count").default(0),
     sharesCount: integer("shares_count").default(0),
+    repostsCount: integer("reposts_count").default(0),
     commentsCount: integer("comments_count").default(0),
     upvotesCount: integer("upvotes_count").default(0),
     downvotesCount: integer("downvotes_count").default(0),
@@ -104,6 +105,16 @@ export const comments = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
   (t) => [index("idx_comments_post_id").on(t.postId)],
+);
+
+export const postReposts = pgTable(
+  "post_reposts",
+  {
+    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  },
+  (t) => [primaryKey({ columns: [t.postId, t.userId] })],
 );
 
 export const follows = pgTable(

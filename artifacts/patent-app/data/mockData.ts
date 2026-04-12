@@ -29,9 +29,11 @@ export type Tip = {
   didntWorkCount: number;
   commentCount: number;
   likeCount: number;
+  repostCount?: number;
   trustScore: number;
   isTrending?: boolean;
   timestamp: string;
+  repostedBy?: string;
 };
 
 export type Question = {
@@ -47,7 +49,9 @@ export type Question = {
   text: string;
   answerCount: number;
   likeCount: number;
+  repostCount: number;
   timestamp: string;
+  repostedBy?: string;
 };
 
 export type FeedItem = Tip | Question;

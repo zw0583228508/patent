@@ -32,13 +32,15 @@ type Props = { tip: Tip; index?: number };
 export default function TipCard({ tip, index = 0 }: Props) {
   const colors = useColors();
   const { t, isRTL } = useSettings();
-  const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
+  const { votes, savedIds, likedIds, repostedIds, comments, vote, toggleSave, toggleLike, toggleRepost } = useFeed();
   const { follow, unfollow, isFollowing } = useSocial();
   const { requireAuth } = useAuth();
   const { showToast } = useToast();
+  const originalId = tip.id.startsWith("repost_") ? tip.id.slice(7) : tip.id;
   const myVote = votes[tip.id];
   const saved = savedIds.has(tip.id);
   const liked = likedIds.has(tip.id);
+  const reposted = repostedIds.has(originalId) || tip.repostedBy === "אני";
   const following = isFollowing(tip.userId);
   const [showComments, setShowComments] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
@@ -107,6 +109,14 @@ export default function TipCard({ tip, index = 0 }: Props) {
     } catch {}
   }
 
+  function handleRepost() {
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      toggleRepost(tip);
+      showToast(reposted ? t("toastUnreposted") : t("toastReposted"), "success", "repeat");
+    });
+  }
+
   function handleAuthorPress() {
     if (tip.userId === "me") router.push("/(tabs)/profile");
     else router.push(`/profile/${tip.userId}` as any);
@@ -118,12 +128,22 @@ export default function TipCard({ tip, index = 0 }: Props) {
   const commentCount = (comments[tip.id] ?? []).length || tip.commentCount;
   const isMyTip = tip.userId === "me";
 
+  const repostCount = (tip.repostCount ?? 0) + (reposted ? 1 : 0);
+
   return (
     <>
+      {tip.repostedBy && (
+        <View style={[styles.repostBanner, { flexDirection: dir }]}>
+          <Feather name="repeat" size={11} color={colors.accentGreen} />
+          <Text style={[styles.repostBannerText, { color: colors.accentGreen }]}>
+            {tip.repostedBy === "אני" ? t("youReposted") : `${tip.repostedBy} ${t("reposted")}`}
+          </Text>
+        </View>
+      )}
       <Animated.View
         style={[
           styles.card,
-          { backgroundColor: colors.card, borderColor: colors.border },
+          { backgroundColor: colors.card, borderColor: tip.repostedBy ? "rgba(64,224,64,0.2)" : colors.border },
           { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         ]}
         testID={`tip-card-${tip.id}`}
@@ -250,6 +270,19 @@ export default function TipCard({ tip, index = 0 }: Props) {
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={[styles.actionBtn, { flexDirection: dir }]}
+            onPress={handleRepost}
+            testID={`repost-${tip.id}`}
+          >
+            <Feather name="repeat" size={16} color={reposted ? colors.accentGreen : colors.mutedForeground} />
+            {repostCount > 0 && (
+              <Text style={[styles.actionCount, { color: reposted ? colors.accentGreen : colors.mutedForeground }]}>
+                {repostCount}
+              </Text>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={styles.actionBtn}
             onPress={() => requireAuth(() => { toggleSave(tip.id); showToast(saved ? t("toastUnsaved") : t("toastSaved"), "success", "bookmark"); })}
             testID={`save-${tip.id}`}
@@ -313,4 +346,10 @@ const styles = StyleSheet.create({
   actionBtn: { alignItems: "center", gap: 4 },
   actionCount: { fontSize: 13 },
   timestamp: { fontSize: 10 },
+  repostBanner: {
+    alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 5,
+    borderTopLeftRadius: 10, borderTopRightRadius: 10,
+    backgroundColor: "rgba(64,224,64,0.08)", marginBottom: -6,
+  },
+  repostBannerText: { fontSize: 11, fontWeight: "500" as const },
 });

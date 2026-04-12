@@ -70,6 +70,7 @@ export type TKeys =
   | "toastLiked" | "toastUnliked" | "toastSaved" | "toastUnsaved"
   | "toastFollowing" | "toastUnfollowed" | "toastVotedWorked" | "toastVotedDidnt"
   | "toastCommentAdded" | "toastPostPublished"
+  | "toastReposted" | "toastUnreposted" | "reposted" | "youReposted"
   | "share" | "viewProfile" | "loadMore" | "noMoreItems"
   | "users" | "searchUsers" | "noUsersFound"
   | "privacyPolicy" | "termsOfService" | "legalSection" | "aboutApp" | "appVersion"
@@ -118,6 +119,8 @@ const t: Record<string, Partial<Translations>> = {
     toastFollowing: "עוקב עכשיו!", toastUnfollowed: "הפסקת לעקוב",
     toastVotedWorked: "הצבעת: עבד!", toastVotedDidnt: "הצבעת: לא עבד",
     toastCommentAdded: "התגובה נוספה!", toastPostPublished: "הפוסט פורסם!",
+    toastReposted: "פורסם מחדש!", toastUnreposted: "הסרת את הפרסום המחדש",
+    reposted: "פרסם מחדש", youReposted: "פרסמת מחדש",
     share: "שתף", viewProfile: "צפה בפרופיל",
     loadMore: "טען עוד", noMoreItems: "הגעת לסוף הפיד",
     users: "משתמשים", searchUsers: "חפש משתמשים...", noUsersFound: "לא נמצאו משתמשים",
@@ -165,6 +168,8 @@ const t: Record<string, Partial<Translations>> = {
     toastFollowing: "Now following!", toastUnfollowed: "Unfollowed",
     toastVotedWorked: "Voted: Worked!", toastVotedDidnt: "Voted: Didn't work",
     toastCommentAdded: "Comment added!", toastPostPublished: "Post published!",
+    toastReposted: "Reposted!", toastUnreposted: "Repost removed",
+    reposted: "reposted", youReposted: "You reposted",
     share: "Share", viewProfile: "View Profile",
     loadMore: "Load More", noMoreItems: "You've reached the end",
     users: "Users", searchUsers: "Search users...", noUsersFound: "No users found",

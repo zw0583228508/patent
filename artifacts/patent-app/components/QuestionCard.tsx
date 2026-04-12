@@ -32,11 +32,13 @@ type Props = { question: Question; index?: number };
 export default function QuestionCard({ question, index = 0 }: Props) {
   const colors = useColors();
   const { t, isRTL } = useSettings();
-  const { likedIds, comments, toggleLike } = useFeed();
+  const { likedIds, repostedIds, comments, toggleLike, toggleRepost } = useFeed();
   const { follow, unfollow, isFollowing } = useSocial();
   const { requireAuth } = useAuth();
   const { showToast } = useToast();
+  const originalId = question.id.startsWith("repost_") ? question.id.slice(7) : question.id;
   const liked = likedIds.has(question.id);
+  const reposted = repostedIds.has(originalId) || question.repostedBy === "אני";
   const following = isFollowing(question.userId);
   const isMyQuestion = question.userId === "me";
   const [showComments, setShowComments] = useState(false);
@@ -81,6 +83,14 @@ export default function QuestionCard({ question, index = 0 }: Props) {
     });
   }
 
+  function handleRepost() {
+    requireAuth(() => {
+      if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      toggleRepost(question);
+      showToast(reposted ? t("toastUnreposted") : t("toastReposted"), "success", "repeat");
+    });
+  }
+
   async function handleShare() {
     try {
       await Share.share({ message: question.text, title: "Patent — " + question.category });
@@ -94,13 +104,22 @@ export default function QuestionCard({ question, index = 0 }: Props) {
 
   const likeCount = question.likeCount + (liked ? 1 : 0);
   const commentCount = (comments[question.id] ?? []).length || question.answerCount;
+  const repostCount = (question.repostCount ?? 0) + (reposted ? 1 : 0);
 
   return (
     <>
+      {question.repostedBy && (
+        <View style={[styles.repostBanner, { flexDirection: dir }]}>
+          <Feather name="repeat" size={11} color={colors.accentGreen} />
+          <Text style={[styles.repostBannerText, { color: colors.accentGreen }]}>
+            {question.repostedBy === "אני" ? t("youReposted") : `${question.repostedBy} ${t("reposted")}`}
+          </Text>
+        </View>
+      )}
       <Animated.View
         style={[
           styles.card,
-          { backgroundColor: colors.card, borderColor: "rgba(64,224,240,0.2)" },
+          { backgroundColor: colors.card, borderColor: question.repostedBy ? "rgba(64,224,64,0.2)" : "rgba(64,224,240,0.2)" },
           { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         ]}
         testID={`question-card-${question.id}`}
@@ -180,6 +199,19 @@ export default function QuestionCard({ question, index = 0 }: Props) {
               </TouchableOpacity>
             </Animated.View>
 
+            <TouchableOpacity
+              style={[styles.actionBtn, { flexDirection: dir }]}
+              onPress={handleRepost}
+              testID={`repost-question-${question.id}`}
+            >
+              <Feather name="repeat" size={15} color={reposted ? colors.accentGreen : colors.mutedForeground} />
+              {repostCount > 0 && (
+                <Text style={[styles.actionCount, { color: reposted ? colors.accentGreen : colors.mutedForeground }]}>
+                  {repostCount}
+                </Text>
+              )}
+            </TouchableOpacity>
+
             <TouchableOpacity style={styles.actionBtn} onPress={handleShare} testID={`share-question-${question.id}`}>
               <Feather name="share-2" size={15} color={colors.mutedForeground} />
             </TouchableOpacity>
@@ -228,4 +260,10 @@ const styles = StyleSheet.create({
   actionBtn: { alignItems: "center", gap: 4 },
   actionCount: { fontSize: 13 },
   timestamp: { fontSize: 10 },
+  repostBanner: {
+    alignItems: "center", gap: 5, paddingHorizontal: 12, paddingVertical: 5,
+    borderTopLeftRadius: 10, borderTopRightRadius: 10,
+    backgroundColor: "rgba(64,224,64,0.08)", marginBottom: -6,
+  },
+  repostBannerText: { fontSize: 11, fontWeight: "500" as const },
 });

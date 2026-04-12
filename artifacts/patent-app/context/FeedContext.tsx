@@ -14,10 +14,12 @@ type FeedContextType = {
   votes: VoteMap;
   savedIds: Set<string>;
   likedIds: LikeSet;
+  repostedIds: Set<string>;
   comments: CommentsMap;
   vote: (id: string, vote: "worked" | "didnt") => void;
   toggleSave: (id: string) => void;
   toggleLike: (id: string) => void;
+  toggleRepost: (item: FeedItem) => void;
   addComment: (itemId: string, text: string) => void;
   addPost: (type: "tip" | "question", text: string, categoryId: string) => FeedItem;
   activeCategory: string;
@@ -43,6 +45,7 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
   const [votes, setVotes] = useState<VoteMap>({});
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const [likedIds, setLikedIds] = useState<LikeSet>(new Set());
+  const [repostedIds, setRepostedIds] = useState<Set<string>>(new Set());
   const [comments, setComments] = useState<CommentsMap>(COMMENTS_MAP);
   const [activeCategory, setActiveCategoryState] = useState("all");
   const [userPosts, setUserPosts] = useState<FeedItem[]>([]);
@@ -57,6 +60,9 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     });
     AsyncStorage.getItem("patent_liked").then((v) => {
       if (v) setLikedIds(new Set(JSON.parse(v)));
+    });
+    AsyncStorage.getItem("patent_reposted").then((v) => {
+      if (v) setRepostedIds(new Set(JSON.parse(v)));
     });
     AsyncStorage.getItem("patent_comments").then((v) => {
       if (v) setComments({ ...COMMENTS_MAP, ...JSON.parse(v) });
@@ -107,6 +113,32 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     setComments((prev) => {
       const next = { ...prev, [itemId]: [newComment, ...(prev[itemId] ?? [])] };
       AsyncStorage.setItem("patent_comments", JSON.stringify(next));
+      return next;
+    });
+  }
+
+  function toggleRepost(item: FeedItem) {
+    const repostKey = "repost_" + item.id;
+    setRepostedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(item.id)) {
+        next.delete(item.id);
+        setUserPosts((posts) => {
+          const updated = posts.filter((p) => p.id !== repostKey);
+          AsyncStorage.setItem("patent_user_posts", JSON.stringify(updated));
+          return updated;
+        });
+      } else {
+        next.add(item.id);
+        const reposted: FeedItem = { ...item, id: repostKey, repostedBy: "אני" } as FeedItem;
+        setUserPosts((posts) => {
+          const updated = [reposted, ...posts];
+          AsyncStorage.setItem("patent_user_posts", JSON.stringify(updated));
+          return updated;
+        });
+        setVisibleCount((c) => c + 1);
+      }
+      AsyncStorage.setItem("patent_reposted", JSON.stringify([...next]));
       return next;
     });
   }
@@ -174,10 +206,12 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
         votes,
         savedIds,
         likedIds,
+        repostedIds,
         comments,
         vote,
         toggleSave,
         toggleLike,
+        toggleRepost,
         addComment,
         addPost,
         activeCategory,
