@@ -143,17 +143,19 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={onClose} statusBarTranslucent>
-      {/* Backdrop — only triggers onClose when pressed directly, not from inside the sheet */}
-      <Pressable style={styles.backdrop} onPress={onClose} />
+      {/* Visual backdrop — no pointer events, purely decorative */}
+      <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.65)" }]} pointerEvents="none" />
 
-      {/* Sheet — intercepts all touch events to prevent backdrop from firing */}
-      <Animated.View
-        style={[
-          styles.sheet,
-          { backgroundColor: colors.surface, borderTopColor: colors.border, height: sheetHeight, transform: [{ translateY }] },
-        ]}
-        onStartShouldSetResponder={() => true}
-      >
+      {/* Flex container: dismiss area fills ABOVE the sheet, zero overlap */}
+      <View style={styles.modalContainer}>
+        <Pressable style={styles.dismissArea} onPress={onClose} />
+
+        <Animated.View
+          style={[
+            styles.sheet,
+            { backgroundColor: colors.surface, borderTopColor: colors.border, height: sheetHeight, transform: [{ translateY }] },
+          ]}
+        >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
         <View style={[styles.sheetHeader, { borderBottomColor: colors.border, flexDirection: dir }]}>
@@ -222,14 +224,16 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
             </View>
           </View>
         </KeyboardAvoidingView>
-      </Animated.View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: "rgba(0,0,0,0.65)", zIndex: 0 },
-  sheet: { position: "absolute", bottom: 0, left: 0, right: 0, borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1, zIndex: 1 },
+  modalContainer: { flex: 1, justifyContent: "flex-end" },
+  dismissArea: { flex: 1 },
+  sheet: { borderTopLeftRadius: 24, borderTopRightRadius: 24, borderTopWidth: 1 },
   handle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginTop: 10, marginBottom: 4 },
   sheetHeader: { alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1 },
   sheetTitle: { fontSize: 16, fontWeight: "700" as const },

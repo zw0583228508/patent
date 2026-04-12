@@ -166,23 +166,28 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose}>
-        <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.65)", opacity: backdropAnim }]} />
-      </Pressable>
-
+      {/* Visual backdrop only — no pointer events so it never intercepts touches */}
       <Animated.View
-        style={[
-          styles.sheet,
-          {
-            backgroundColor: colors.surface,
-            borderTopColor: colors.border,
-            paddingBottom: insets.bottom + 16,
-            maxHeight: SHEET_MAX,
-            transform: [{ translateY: sheetTranslateY }],
-          },
-        ]}
-        onStartShouldSetResponder={() => true}
-      >
+        style={[StyleSheet.absoluteFill, { backgroundColor: "rgba(0,0,0,0.65)", opacity: backdropAnim }]}
+        pointerEvents="none"
+      />
+
+      {/* Flex container: Pressable fills the area ABOVE the sheet only — zero overlap */}
+      <View style={styles.modalContainer}>
+        <Pressable style={styles.dismissArea} onPress={onClose} />
+
+        <Animated.View
+          style={[
+            styles.sheet,
+            {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              paddingBottom: insets.bottom + 16,
+              maxHeight: SHEET_MAX,
+              transform: [{ translateY: sheetTranslateY }],
+            },
+          ]}
+        >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
         <View style={[styles.header, { flexDirection: dir }]}>
@@ -326,17 +331,21 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
             )}
           </ScrollView>
         )}
-      </Animated.View>
+        </Animated.View>
+      </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  modalContainer: {
+    flex: 1,
+    justifyContent: "flex-end",
+  },
+  dismissArea: {
+    flex: 1,
+  },
   sheet: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderTopWidth: 1,
