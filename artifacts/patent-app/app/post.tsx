@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
 import { useSettings } from "@/context/SettingsContext";
 import { CATEGORIES } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
@@ -26,6 +27,7 @@ export default function PostScreen() {
   );
   const [text, setText] = useState("");
   const [category, setCategory] = useState("home");
+  const [media, setMedia] = useState<MediaAsset[]>([]);
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const dir = isRTL ? "row-reverse" : "row";
   const textAlign = isRTL ? "right" : "left";
@@ -61,7 +63,7 @@ export default function PostScreen() {
   ];
 
   function handleSubmit() {
-    if (!text.trim()) return;
+    if (!text.trim() && media.length === 0) return;
     if (Platform.OS !== "web")
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.back();
@@ -93,7 +95,7 @@ export default function PostScreen() {
           style={[
             styles.submitBtn,
             {
-              backgroundColor: text.trim()
+              backgroundColor: (text.trim() || media.length > 0)
                 ? colors.primary
                 : colors.surface2,
             },
@@ -106,7 +108,7 @@ export default function PostScreen() {
             style={[
               styles.submitBtnText,
               {
-                color: text.trim()
+                color: (text.trim() || media.length > 0)
                   ? colors.primaryForeground
                   : colors.mutedForeground,
               },
@@ -200,6 +202,8 @@ export default function PostScreen() {
           textAlignVertical="top"
           testID="post-text-input"
         />
+
+        <MediaPicker media={media} onChange={setMedia} />
 
         <Text
           style={[

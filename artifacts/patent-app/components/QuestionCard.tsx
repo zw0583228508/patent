@@ -14,6 +14,7 @@ import CommentsSheet from "@/components/CommentsSheet";
 import TranslateButton from "@/components/TranslateButton";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useSocial } from "@/context/SocialContext";
 import { Question } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -28,7 +29,10 @@ export default function QuestionCard({ question }: Props) {
   const colors = useColors();
   const { t, isRTL } = useSettings();
   const { likedIds, comments, toggleLike } = useFeed();
+  const { follow, unfollow, isFollowing } = useSocial();
   const liked = likedIds.has(question.id);
+  const following = isFollowing(question.userId);
+  const isMyQuestion = question.userId === "me";
   const [showComments, setShowComments] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
   const scaleLike = React.useRef(new Animated.Value(1)).current;
@@ -36,6 +40,12 @@ export default function QuestionCard({ question }: Props) {
   const dir = isRTL ? "row-reverse" : "row";
   const textAlign = isRTL ? "right" : "left";
   const alignSelf = isRTL ? "flex-end" : "flex-start";
+
+  function handleFollow() {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (following) unfollow(question.userId);
+    else follow(question.userId);
+  }
 
   function handleLike() {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -77,6 +87,21 @@ export default function QuestionCard({ question }: Props) {
               <Text style={[styles.category, { color: colors.mutedForeground }]}> {question.category}</Text>
             </View>
           </View>
+          {!isMyQuestion && (
+            <TouchableOpacity
+              style={[
+                styles.followBtn,
+                {
+                  backgroundColor: following ? "transparent" : "rgba(64,224,240,0.10)",
+                  borderColor: following ? colors.border : "rgba(64,224,240,0.4)",
+                },
+              ]}
+              onPress={handleFollow}
+              testID={`follow-author-${question.id}`}
+            >
+              <Feather name={following ? "user-check" : "user-plus"} size={10} color={following ? colors.mutedForeground : colors.accentCyan} />
+            </TouchableOpacity>
+          )}
         </View>
 
         <Text style={[styles.qText, { color: "#c0c0d8", textAlign }]}>
@@ -162,6 +187,10 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     gap: 10,
+  },
+  followBtn: {
+    width: 24, height: 24, borderRadius: 12, borderWidth: 1,
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
   },
   avatar: {
     width: 32,

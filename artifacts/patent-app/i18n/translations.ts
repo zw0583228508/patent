@@ -58,7 +58,11 @@ export type TKeys =
   | "topicsTitle" | "topicsSubtitle"
   | "nothingInCategory" | "feedEmpty"
   | "notificationsTitle" | "done" | "settingsTitle"
-  | "translate" | "showOriginal" | "translating" | "translateError";
+  | "translate" | "showOriginal" | "translating" | "translateError"
+  | "forYou" | "followingFeed" | "follow" | "unfollow" | "followers" | "whoIFollow"
+  | "fromCamera" | "fromGallery"
+  | "welcomeTitle" | "welcomeSubtitle" | "letsGo" | "skipForNow"
+  | "noFollowing" | "noFollowers" | "exploreUsers";
 
 export type Translations = Record<TKeys, string>;
 
@@ -85,6 +89,13 @@ const t: Record<string, Translations> = {
     nothingInCategory: "אין טיפים בקטגוריה זו", feedEmpty: "הפיד ריק",
     notificationsTitle: "הגדרות התראות", done: "סיום", settingsTitle: "הגדרות",
     translate: "תרגם", showOriginal: "מקור", translating: "מתרגם...", translateError: "שגיאה בתרגום",
+    forYou: "בשבילי", followingFeed: "עוקבים", follow: "עקוב", unfollow: "עוקב",
+    followers: "עוקבים", whoIFollow: "אני עוקב",
+    fromCamera: "מצלמה", fromGallery: "גלריה",
+    welcomeTitle: "ברוכים הבאים!", welcomeSubtitle: "בחר נושאים שמעניינים אותך לפיד מותאם אישית",
+    letsGo: "בוא נתחיל", skipForNow: "דלג",
+    noFollowing: "עדיין לא עוקב אחרי אף אחד", noFollowers: "עדיין אין לך עוקבים",
+    exploreUsers: "גלה אנשים",
   },
   en: {
     appName: "Patent",
@@ -108,6 +119,13 @@ const t: Record<string, Translations> = {
     nothingInCategory: "No tips in this category", feedEmpty: "Feed is empty",
     notificationsTitle: "Notification Settings", done: "Done", settingsTitle: "Settings",
     translate: "Translate", showOriginal: "Original", translating: "Translating...", translateError: "Translation failed",
+    forYou: "For You", followingFeed: "Following", follow: "Follow", unfollow: "Following",
+    followers: "Followers", whoIFollow: "I Follow",
+    fromCamera: "Camera", fromGallery: "Gallery",
+    welcomeTitle: "Welcome!", welcomeSubtitle: "Choose topics that interest you for a personalized feed",
+    letsGo: "Let's Go", skipForNow: "Skip",
+    noFollowing: "Not following anyone yet", noFollowers: "No followers yet",
+    exploreUsers: "Explore People",
   },
   ar: {
     appName: "Patent",
@@ -275,7 +293,8 @@ const t: Record<string, Translations> = {
 const fallback = t["en"];
 
 export function getTranslations(langCode: string): Translations {
-  return t[langCode] ?? fallback;
+  if (!t[langCode]) return fallback;
+  return { ...fallback, ...t[langCode] } as Translations;
 }
 
 export function isRTLLang(langCode: string): boolean {

@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import MediaPicker, { MediaAsset } from "@/components/MediaPicker";
 import TranslateButton from "@/components/TranslateButton";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
@@ -42,6 +43,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const { comments, addComment } = useFeed();
   const { t, isRTL } = useSettings();
   const [text, setText] = useState("");
+  const [media, setMedia] = useState<MediaAsset[]>([]);
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set());
   const [translatedComments, setTranslatedComments] = useState<Record<string, string | null>>({});
@@ -63,10 +65,11 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const textAlign = isRTL ? "right" : "left";
 
   function handleSubmit() {
-    if (!text.trim()) return;
+    if (!text.trim() && media.length === 0) return;
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     addComment(itemId, text.trim());
     setText("");
+    setMedia([]);
   }
 
   function toggleCommentLike(commentId: string) {
@@ -166,28 +169,31 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
         />
 
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : "height"} keyboardVerticalOffset={0}>
-          <View style={[styles.inputRow, { borderTopColor: colors.border, paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 8), flexDirection: dir }]}>
-            <View style={[styles.myAvatar, { backgroundColor: "#f0e040" }]}>
-              <Text style={styles.myAvatarText}>יכ</Text>
+          <View style={[styles.inputArea, { borderTopColor: colors.border, paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 8) }]}>
+            <MediaPicker media={media} onChange={setMedia} compact />
+            <View style={[styles.inputRow, { flexDirection: dir }]}>
+              <View style={[styles.myAvatar, { backgroundColor: "#f0e040" }]}>
+                <Text style={styles.myAvatarText}>יכ</Text>
+              </View>
+              <TextInput
+                style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.foreground }]}
+                placeholder={isQuestion ? t("writeAnswer") : t("addComment")}
+                placeholderTextColor={colors.mutedForeground}
+                value={text}
+                onChangeText={setText}
+                textAlign={textAlign as any}
+                multiline
+                testID="comment-input"
+              />
+              <TouchableOpacity
+                style={[styles.sendBtn, { backgroundColor: (text.trim() || media.length > 0) ? colors.primary : colors.surface2 }]}
+                onPress={handleSubmit}
+                disabled={!text.trim() && media.length === 0}
+                testID="send-comment-btn"
+              >
+                <Feather name="send" size={16} color={(text.trim() || media.length > 0) ? colors.primaryForeground : colors.mutedForeground} />
+              </TouchableOpacity>
             </View>
-            <TextInput
-              style={[styles.input, { backgroundColor: colors.surface2, borderColor: colors.border, color: colors.foreground }]}
-              placeholder={isQuestion ? t("writeAnswer") : t("addComment")}
-              placeholderTextColor={colors.mutedForeground}
-              value={text}
-              onChangeText={setText}
-              textAlign={textAlign as any}
-              multiline
-              testID="comment-input"
-            />
-            <TouchableOpacity
-              style={[styles.sendBtn, { backgroundColor: text.trim() ? colors.primary : colors.surface2 }]}
-              onPress={handleSubmit}
-              disabled={!text.trim()}
-              testID="send-comment-btn"
-            >
-              <Feather name="send" size={16} color={text.trim() ? colors.primaryForeground : colors.mutedForeground} />
-            </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
       </Animated.View>
@@ -218,7 +224,8 @@ const styles = StyleSheet.create({
   commentLikeCount: { fontSize: 11 },
   emptyComments: { alignItems: "center", paddingVertical: 40, gap: 12 },
   emptyText: { fontSize: 14 },
-  inputRow: { alignItems: "flex-end", gap: 8, paddingHorizontal: 12, paddingTop: 10, borderTopWidth: 1 },
+  inputArea: { paddingHorizontal: 12, paddingTop: 10, borderTopWidth: 1, gap: 8 },
+  inputRow: { alignItems: "flex-end", gap: 8 },
   myAvatar: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   myAvatarText: { fontSize: 10, fontWeight: "700" as const, color: "#0a0a0f" },
   input: { flex: 1, borderRadius: 20, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 8, fontSize: 14, maxHeight: 80 },

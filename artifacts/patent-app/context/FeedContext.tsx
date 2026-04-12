@@ -90,21 +90,10 @@ export function FeedProvider({ children }: { children: React.ReactNode }) {
     });
   }
 
-  const categoryMap: Record<string, string> = {
-    home: "בית",
-    food: "אוכל",
-    business: "עסקים",
-    health: "בריאות",
-    tech: "טכנולוגיה",
-    nature: "טבע",
-  };
-
   const items =
     activeCategory === "all"
       ? FEED_ITEMS
-      : FEED_ITEMS.filter(
-          (item) => item.category === (categoryMap[activeCategory] ?? activeCategory)
-        );
+      : FEED_ITEMS.filter((item) => item.categoryId === activeCategory);
 
   return (
     <FeedContext.Provider

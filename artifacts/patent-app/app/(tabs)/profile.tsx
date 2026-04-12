@@ -1,12 +1,13 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { FlatList, Platform, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { FlatList, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import TipCard from "@/components/TipCard";
 import { useSettings } from "@/context/SettingsContext";
-import { FEED_ITEMS, Tip, USER_PROFILE, USER_TIPS } from "@/data/mockData";
+import { useSocial } from "@/context/SocialContext";
+import { FEED_ITEMS, MOCK_USERS, MockUser, Tip, USER_PROFILE, USER_TIPS } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
 function StatCard({ label, value, color }: { label: string; value: string | number; color?: string }) {
@@ -19,22 +20,71 @@ function StatCard({ label, value, color }: { label: string; value: string | numb
   );
 }
 
+function UserRow({ user, onFollow }: { user: MockUser; onFollow: (id: string) => void }) {
+  const colors = useColors();
+  const { t, isRTL } = useSettings();
+  const { isFollowing, follow, unfollow } = useSocial();
+  const following = isFollowing(user.id);
+  const dir = isRTL ? "row-reverse" : "row";
+
+  return (
+    <View style={[styles.userRow, { borderBottomColor: colors.border, flexDirection: dir }]}>
+      <View style={[styles.userAvatar, { backgroundColor: user.avatarGradient[0] }]}>
+        <Text style={styles.userAvatarText}>{user.initials}</Text>
+      </View>
+      <View style={[styles.userInfo, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
+        <Text style={[styles.userName, { color: colors.foreground }]}>{user.name}</Text>
+        <Text style={[styles.userHandle, { color: colors.mutedForeground }]}>{user.username}</Text>
+      </View>
+      <TouchableOpacity
+        style={[
+          styles.followBtn,
+          {
+            backgroundColor: following ? "transparent" : colors.primary,
+            borderColor: following ? colors.border : colors.primary,
+          },
+        ]}
+        onPress={() => following ? unfollow(user.id) : follow(user.id)}
+        testID={`follow-${user.id}`}
+      >
+        <Text style={[styles.followBtnText, { color: following ? colors.mutedForeground : colors.primaryForeground }]}>
+          {following ? t("unfollow") : t("follow")}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
 const SAVED_TIPS = FEED_ITEMS.filter((item): item is Tip => item.type === "tip").slice(0, 3);
 
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { t, isRTL } = useSettings();
-  const [tab, setTab] = useState<"tips" | "saved">("tips");
+  const { followedUsers } = useSocial();
+  const [tab, setTab] = useState<"tips" | "saved" | "following" | "followers">("tips");
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const dir = isRTL ? "row-reverse" : "row";
 
-  const tabData = tab === "tips" ? USER_TIPS : (SAVED_TIPS as Tip[]);
+  const followingList = MOCK_USERS.filter((u) => followedUsers.has(u.id));
+  const followersList = MOCK_USERS.slice(0, 5);
+
+  const tabData = tab === "tips" ? USER_TIPS : tab === "saved" ? SAVED_TIPS : [];
+
+  const TABS = [
+    { id: "tips", label: t("myTips") },
+    { id: "saved", label: t("saved") },
+    { id: "following", label: t("whoIFollow") },
+    { id: "followers", label: t("followers") },
+  ] as const;
+
+  const followersCount = USER_PROFILE.followersCount;
+  const followingCount = followedUsers.size + USER_PROFILE.followingCount;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <FlatList
-        data={tabData}
+        data={tab === "tips" || tab === "saved" ? tabData : []}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <TipCard tip={item} />}
         contentContainerStyle={[styles.listContent, { paddingBottom: Platform.OS === "web" ? 100 : insets.bottom + 80 }]}
@@ -69,39 +119,56 @@ export default function ProfileScreen() {
 
             <View style={[styles.statsRow, { flexDirection: dir }]}>
               <StatCard label={t("tips")} value={USER_PROFILE.tipsCount} />
-              <StatCard label={t("workedForMe")} value={`${(USER_PROFILE.workedCount / 1000).toFixed(1)}k`} color={colors.accentGreen} />
-              <StatCard label={t("saved")} value={USER_PROFILE.savedCount} color={colors.accentCyan} />
+              <StatCard label={t("followers")} value={followersCount} color={colors.accentCyan} />
+              <StatCard label={t("whoIFollow")} value={followingCount} color={colors.accentPink} />
             </View>
 
-            <View style={[styles.tabs, { borderColor: colors.border, flexDirection: dir }]}>
-              <TouchableOpacity
-                style={[styles.tabBtn, tab === "tips" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-                onPress={() => setTab("tips")}
-                testID="tab-my-tips"
-              >
-                <Text style={[styles.tabBtnText, { color: tab === "tips" ? colors.primary : colors.mutedForeground }]}>
-                  {t("myTips")}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tabBtn, tab === "saved" && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
-                onPress={() => setTab("saved")}
-                testID="tab-saved"
-              >
-                <Text style={[styles.tabBtnText, { color: tab === "saved" ? colors.primary : colors.mutedForeground }]}>
-                  {t("saved")}
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.tabsScroll}
+              contentContainerStyle={[styles.tabs, { flexDirection: dir }]}
+            >
+              {TABS.map(({ id, label }) => (
+                <TouchableOpacity
+                  key={id}
+                  style={[styles.tabBtn, tab === id && { borderBottomColor: colors.primary, borderBottomWidth: 2 }]}
+                  onPress={() => setTab(id)}
+                  testID={`tab-${id}`}
+                >
+                  <Text style={[styles.tabBtnText, { color: tab === id ? colors.primary : colors.mutedForeground }]}>
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {(tab === "following" || tab === "followers") && (
+              <View style={styles.userListContainer}>
+                {(tab === "following" ? followingList : followersList).map((user) => (
+                  <UserRow key={user.id} user={user} onFollow={() => {}} />
+                ))}
+                {tab === "following" && followingList.length === 0 && (
+                  <View style={styles.emptySection}>
+                    <Feather name="user-plus" size={32} color={colors.mutedForeground} />
+                    <Text style={[styles.emptyText, { color: colors.mutedForeground, textAlign: "center" }]}>
+                      {t("noFollowing")}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
           </View>
         }
         ListEmptyComponent={
-          <View style={styles.empty}>
-            <Feather name="bookmark" size={36} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
-              {tab === "saved" ? t("noSaved") : t("noTips")}
-            </Text>
-          </View>
+          tab === "tips" || tab === "saved" ? (
+            <View style={styles.empty}>
+              <Feather name="bookmark" size={36} color={colors.mutedForeground} />
+              <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>
+                {tab === "saved" ? t("noSaved") : t("noTips")}
+              </Text>
+            </View>
+          ) : null
         }
       />
     </View>
@@ -111,22 +178,15 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1c1c27",
+    alignItems: "center", justifyContent: "space-between",
+    paddingHorizontal: 16, paddingBottom: 10,
+    borderBottomWidth: 1, borderBottomColor: "#1c1c27",
   },
   headerTitle: { fontSize: 22, fontWeight: "800" as const },
   settingsBtn: { padding: 6 },
   profileCard: {
-    alignItems: "center",
-    borderWidth: 1,
-    borderRadius: 20,
-    margin: 16,
-    padding: 24,
-    gap: 8,
+    alignItems: "center", borderWidth: 1, borderRadius: 20,
+    margin: 16, padding: 24, gap: 8,
   },
   avatarLarge: {
     width: 72, height: 72, borderRadius: 36,
@@ -148,13 +208,33 @@ const styles = StyleSheet.create({
   },
   statValue: { fontSize: 22, fontWeight: "800" as const },
   statLabel: { fontSize: 12 },
-  tabs: { borderBottomWidth: 1, marginHorizontal: 16, marginBottom: 12 },
+  tabsScroll: { borderBottomWidth: 1, borderBottomColor: "#1c1c27" },
+  tabs: { paddingHorizontal: 16, marginBottom: 0 },
   tabBtn: {
-    flex: 1, alignItems: "center", paddingVertical: 12,
+    paddingHorizontal: 12, paddingVertical: 12,
     borderBottomWidth: 2, borderBottomColor: "transparent",
   },
-  tabBtnText: { fontSize: 14, fontWeight: "600" as const },
+  tabBtnText: { fontSize: 13, fontWeight: "600" as const },
   listContent: { paddingHorizontal: 16 },
   empty: { alignItems: "center", paddingTop: 40, gap: 12 },
-  emptyText: { fontSize: 15 },
+  emptyText: { fontSize: 15, paddingHorizontal: 20 },
+  userListContainer: { paddingHorizontal: 16, paddingTop: 8 },
+  userRow: {
+    alignItems: "center", gap: 12, paddingVertical: 12,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
+  userAvatar: {
+    width: 40, height: 40, borderRadius: 20,
+    alignItems: "center", justifyContent: "center", flexShrink: 0,
+  },
+  userAvatarText: { fontSize: 13, fontWeight: "700" as const, color: "#0a0a0f" },
+  userInfo: { flex: 1, gap: 2 },
+  userName: { fontSize: 14, fontWeight: "600" as const },
+  userHandle: { fontSize: 12 },
+  followBtn: {
+    borderRadius: 20, paddingHorizontal: 16, paddingVertical: 7,
+    borderWidth: 1, flexShrink: 0,
+  },
+  followBtnText: { fontSize: 13, fontWeight: "600" as const },
+  emptySection: { alignItems: "center", paddingVertical: 40, gap: 12 },
 });

@@ -14,6 +14,7 @@ import CommentsSheet from "@/components/CommentsSheet";
 import TranslateButton from "@/components/TranslateButton";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useSocial } from "@/context/SocialContext";
 import { Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -28,9 +29,11 @@ export default function TipCard({ tip }: Props) {
   const colors = useColors();
   const { t, isRTL } = useSettings();
   const { votes, savedIds, likedIds, comments, vote, toggleSave, toggleLike } = useFeed();
+  const { follow, unfollow, isFollowing } = useSocial();
   const myVote = votes[tip.id];
   const saved = savedIds.has(tip.id);
   const liked = likedIds.has(tip.id);
+  const following = isFollowing(tip.userId);
   const [showComments, setShowComments] = useState(false);
   const [translatedText, setTranslatedText] = useState<string | null>(null);
 
@@ -61,10 +64,17 @@ export default function TipCard({ tip }: Props) {
     toggleLike(tip.id);
   }
 
+  function handleFollow() {
+    if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (following) unfollow(tip.userId);
+    else follow(tip.userId);
+  }
+
   const workedCount = tip.workedCount + (myVote === "worked" ? 1 : 0);
   const didntCount = tip.didntWorkCount + (myVote === "didnt" ? 1 : 0);
   const likeCount = tip.likeCount + (liked ? 1 : 0);
   const commentCount = (comments[tip.id] ?? []).length || tip.commentCount;
+  const isMyTip = tip.userId === "me";
 
   return (
     <>
@@ -87,8 +97,29 @@ export default function TipCard({ tip }: Props) {
               <Text style={[styles.category, { color: colors.mutedForeground }]}> {tip.category}</Text>
             </View>
           </View>
-          <View style={[styles.trustBadge, { backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
-            <Text style={[styles.trustText, { color: colors.accentGreen }]}>{tip.trustScore}%</Text>
+          <View style={[styles.headerRight, { flexDirection: dir }]}>
+            <View style={[styles.trustBadge, { backgroundColor: "rgba(64,224,64,0.12)", borderColor: "rgba(64,224,64,0.3)" }]}>
+              <Text style={[styles.trustText, { color: colors.accentGreen }]}>{tip.trustScore}%</Text>
+            </View>
+            {!isMyTip && (
+              <TouchableOpacity
+                style={[
+                  styles.followBtn,
+                  {
+                    backgroundColor: following ? "transparent" : "rgba(240,224,64,0.12)",
+                    borderColor: following ? colors.border : "rgba(240,224,64,0.4)",
+                  },
+                ]}
+                onPress={handleFollow}
+                testID={`follow-author-${tip.id}`}
+              >
+                <Feather
+                  name={following ? "user-check" : "user-plus"}
+                  size={10}
+                  color={following ? colors.mutedForeground : colors.primary}
+                />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -191,95 +222,36 @@ export default function TipCard({ tip }: Props) {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 16,
-    borderWidth: 1,
-    padding: 16,
-    marginBottom: 10,
-    gap: 10,
+    borderRadius: 16, borderWidth: 1, padding: 16, marginBottom: 10, gap: 10,
   },
-  header: {
-    alignItems: "center",
-    gap: 10,
-  },
-  avatar: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  avatarText: {
-    fontSize: 11,
-    fontWeight: "700" as const,
-    color: "#0a0a0f",
-  },
-  meta: {
-    flex: 1,
-  },
-  author: {
-    fontSize: 12,
-    fontWeight: "600" as const,
-  },
-  catRow: {
-    alignItems: "center",
-    marginTop: 2,
-  },
-  category: {
-    fontSize: 10,
-  },
-  trustBadge: {
-    borderRadius: 100,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderWidth: 1,
-  },
-  trustText: {
-    fontSize: 10,
-    fontWeight: "600" as const,
+  header: { alignItems: "center", gap: 10 },
+  avatar: { width: 32, height: 32, borderRadius: 16, alignItems: "center", justifyContent: "center" },
+  avatarText: { fontSize: 11, fontWeight: "700" as const, color: "#0a0a0f" },
+  meta: { flex: 1 },
+  author: { fontSize: 12, fontWeight: "600" as const },
+  catRow: { alignItems: "center", marginTop: 2 },
+  category: { fontSize: 10 },
+  headerRight: { alignItems: "center", gap: 6 },
+  trustBadge: { borderRadius: 100, paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1 },
+  trustText: { fontSize: 10, fontWeight: "600" as const },
+  followBtn: {
+    width: 24, height: 24, borderRadius: 12, borderWidth: 1,
+    alignItems: "center", justifyContent: "center",
   },
   trendingBadge: {
-    alignItems: "center",
-    borderRadius: 100,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderWidth: 1,
-    gap: 4,
+    alignItems: "center", borderRadius: 100, paddingHorizontal: 8, paddingVertical: 3,
+    borderWidth: 1, gap: 4,
   },
-  trendingText: {
-    fontSize: 10,
-    fontWeight: "600" as const,
-  },
-  tipText: {
-    fontSize: 13,
-    lineHeight: 20,
-  },
-  voteRow: {
-    gap: 8,
-  },
+  trendingText: { fontSize: 10, fontWeight: "600" as const },
+  tipText: { fontSize: 13, lineHeight: 20 },
+  voteRow: { gap: 8 },
   voteBtn: {
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 8,
-    paddingVertical: 7,
-    borderWidth: 1,
-    gap: 4,
+    alignItems: "center", justifyContent: "center", borderRadius: 8,
+    paddingVertical: 7, borderWidth: 1, gap: 4,
   },
-  voteBtnText: {
-    fontSize: 11,
-    fontWeight: "500" as const,
-  },
-  actionsRow: {
-    alignItems: "center",
-    gap: 16,
-  },
-  actionBtn: {
-    alignItems: "center",
-    gap: 4,
-  },
-  actionCount: {
-    fontSize: 13,
-  },
-  timestamp: {
-    fontSize: 10,
-  },
+  voteBtnText: { fontSize: 11, fontWeight: "500" as const },
+  actionsRow: { alignItems: "center", gap: 16 },
+  actionBtn: { alignItems: "center", gap: 4 },
+  actionCount: { fontSize: 13 },
+  timestamp: { fontSize: 10 },
 });

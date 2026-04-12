@@ -1,6 +1,6 @@
 import { Feather } from "@expo/vector-icons";
 import { router } from "expo-router";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   FlatList,
   Platform,
@@ -15,8 +15,11 @@ import QuestionCard from "@/components/QuestionCard";
 import TipCard from "@/components/TipCard";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
+import { useSocial } from "@/context/SocialContext";
 import { CATEGORIES, FeedItem, Question, Tip } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
+
+type FeedMode = "forYou" | "following" | "all";
 
 function CategoryPill({ id, label, active, onPress }: { id: string; label: string; active: boolean; onPress: () => void }) {
   const colors = useColors();
@@ -42,7 +45,9 @@ export default function FeedScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { items, activeCategory, setActiveCategory } = useFeed();
-  const { t, isRTL, langCode } = useSettings();
+  const { t, isRTL, followedTopics } = useSettings();
+  const social = useSocial();
+  const [feedMode, setFeedMode] = useState<FeedMode>("forYou");
 
   const renderItem = useCallback(({ item }: { item: FeedItem }) => {
     if (item.type === "tip") return <TipCard tip={item as Tip} />;
@@ -58,6 +63,25 @@ export default function FeedScreen() {
 
   const dir = isRTL ? "row-reverse" : "row";
 
+  const filteredItems = useMemo(() => {
+    if (feedMode === "following") {
+      const followed = social.followedUsers;
+      if (followed.size === 0) return [];
+      return items.filter((item) => followed.has(item.userId));
+    }
+    if (feedMode === "forYou") {
+      if (followedTopics.length === 0) return items;
+      return items.filter((item) => followedTopics.includes(item.categoryId));
+    }
+    return items;
+  }, [items, feedMode, social.followedUsers, followedTopics]);
+
+  const FEED_TABS: { mode: FeedMode; label: string }[] = [
+    { mode: "forYou", label: t("forYou") },
+    { mode: "following", label: t("followingFeed") },
+    { mode: "all", label: t("all") },
+  ];
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 8, flexDirection: dir }]}>
@@ -72,35 +96,63 @@ export default function FeedScreen() {
         </View>
       </View>
 
+      <View style={[styles.feedTabs, { flexDirection: dir, borderBottomColor: colors.border }]}>
+        {FEED_TABS.map(({ mode, label }) => (
+          <TouchableOpacity
+            key={mode}
+            style={[
+              styles.feedTab,
+              feedMode === mode && { borderBottomColor: colors.primary, borderBottomWidth: 2 },
+            ]}
+            onPress={() => setFeedMode(mode)}
+            testID={`feed-tab-${mode}`}
+          >
+            <Text style={[styles.feedTabText, { color: feedMode === mode ? colors.primary : colors.mutedForeground }]}>
+              {label}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       <FlatList
-        data={items}
+        data={filteredItems}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={[styles.list, { paddingBottom: Platform.OS === "web" ? 100 : insets.bottom + 80 }]}
         showsVerticalScrollIndicator={false}
-        scrollEnabled={items.length > 0}
+        scrollEnabled={filteredItems.length > 0}
         ListHeaderComponent={
-          <FlatList
-            horizontal
-            data={CATEGORIES}
-            keyExtractor={(c) => c.id}
-            renderItem={({ item: cat }) => (
-              <CategoryPill
-                id={cat.id}
-                label={categoryLabels[cat.id] ?? cat.label}
-                active={activeCategory === cat.id}
-                onPress={() => setActiveCategory(cat.id)}
-              />
-            )}
-            contentContainerStyle={[styles.categories, { flexDirection: isRTL ? "row-reverse" : "row" }]}
-            showsHorizontalScrollIndicator={false}
-            style={styles.categoriesRow}
-          />
+          feedMode === "all" ? (
+            <FlatList
+              horizontal
+              data={CATEGORIES}
+              keyExtractor={(c) => c.id}
+              renderItem={({ item: cat }) => (
+                <CategoryPill
+                  id={cat.id}
+                  label={categoryLabels[cat.id] ?? cat.label}
+                  active={activeCategory === cat.id}
+                  onPress={() => setActiveCategory(cat.id)}
+                />
+              )}
+              contentContainerStyle={[styles.categories, { flexDirection: isRTL ? "row-reverse" : "row" }]}
+              showsHorizontalScrollIndicator={false}
+              style={styles.categoriesRow}
+            />
+          ) : null
         }
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Feather name="inbox" size={36} color={colors.mutedForeground} />
-            <Text style={[styles.emptyText, { color: colors.mutedForeground }]}>{t("nothingInCategory")}</Text>
+            <Feather
+              name={feedMode === "following" ? "user-plus" : "inbox"}
+              size={36}
+              color={colors.mutedForeground}
+            />
+            <Text style={[styles.emptyText, { color: colors.mutedForeground, textAlign: "center" }]}>
+              {feedMode === "following"
+                ? t("noFollowing")
+                : t("nothingInCategory")}
+            </Text>
           </View>
         }
       />
@@ -115,17 +167,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: "#1c1c27",
   },
   logo: { fontSize: 26, fontWeight: "800" as const, letterSpacing: -0.5 },
   headerIcons: { gap: 4 },
   iconBtn: { padding: 8 },
+  feedTabs: {
+    borderBottomWidth: 1,
+    paddingHorizontal: 4,
+  },
+  feedTab: {
+    flex: 1,
+    alignItems: "center",
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
+  },
+  feedTabText: { fontSize: 14, fontWeight: "600" as const },
   categoriesRow: { marginBottom: 12, marginTop: 4 },
   categories: { paddingHorizontal: 16, gap: 8 },
   pill: { borderRadius: 100, borderWidth: 1, paddingHorizontal: 14, paddingVertical: 6 },
   pillText: { fontSize: 13, fontWeight: "500" as const },
-  list: { paddingHorizontal: 16, paddingTop: 4 },
-  empty: { alignItems: "center", paddingTop: 60, gap: 12 },
+  list: { paddingHorizontal: 16, paddingTop: 8 },
+  empty: { alignItems: "center", paddingTop: 60, gap: 12, paddingHorizontal: 32 },
   emptyText: { fontSize: 15 },
 });
