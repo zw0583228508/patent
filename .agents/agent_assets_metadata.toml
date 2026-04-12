@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "U6f7mw9wddjcfIsRKJa0G"
+uri = "file://artifacts/patent-app/assets/images/icon.png"
+type = "image"
+title = "patent app icon"

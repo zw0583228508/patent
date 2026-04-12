@@ -1,0 +1,27 @@
+kind = "mobile"
+previewPath = "/patent-app/"
+title = "Patent App"
+version = "1.0.0"
+id = "artifacts/patent-app"
+router = "expo-domain"
+
+[[integratedSkills]]
+name = "expo"
+version = "1.0.0"
+
+[[services]]
+ensurePreviewReachable = "/status"
+name = "expo"
+paths = [ "/patent-app/" ]
+localPort = 18653
+
+[services.development]
+run = "pnpm --filter @workspace/patent-app run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/patent-app", "run", "build" ]
+run = [ "pnpm", "--filter", "@workspace/patent-app", "run", "serve" ]
+
+[services.env]
+PORT = "18653"
+BASE_PATH = "/patent-app/"
