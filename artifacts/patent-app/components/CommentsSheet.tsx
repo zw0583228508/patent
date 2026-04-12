@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import TranslateButton from "@/components/TranslateButton";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Comment } from "@/data/mockData";
@@ -43,6 +44,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const [text, setText] = useState("");
   const slideAnim = useRef(new Animated.Value(0)).current;
   const [commentLikes, setCommentLikes] = useState<Set<string>>(new Set());
+  const [translatedComments, setTranslatedComments] = useState<Record<string, string | null>>({});
 
   const itemComments: Comment[] = comments[itemId] ?? [];
 
@@ -80,6 +82,12 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
   const renderComment = ({ item }: { item: Comment }) => {
     const liked = commentLikes.has(item.id);
     const count = item.likeCount + (liked ? 1 : 0);
+    const translated = translatedComments[item.id] ?? null;
+
+    function setTranslated(val: string | null) {
+      setTranslatedComments((prev) => ({ ...prev, [item.id]: val }));
+    }
+
     return (
       <View style={[styles.comment, { borderBottomColor: colors.border, flexDirection: dir }]}>
         <View style={[styles.commentAvatar, { backgroundColor: item.avatarColor }]}>
@@ -90,13 +98,22 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
             <Text style={[styles.commentAuthor, { color: colors.foreground }]}>{item.author}</Text>
             <Text style={[styles.commentTime, { color: "#4a4a6a" }]}>{item.timestamp}</Text>
           </View>
-          <Text style={[styles.commentText, { color: "#c0c0d8", textAlign }]}>{item.text}</Text>
-          <TouchableOpacity style={[styles.commentLikeRow, { flexDirection: dir }]} onPress={() => toggleCommentLike(item.id)}>
-            <Feather name="heart" size={12} color={liked ? colors.accentPink : colors.mutedForeground} />
-            <Text style={[styles.commentLikeCount, { color: liked ? colors.accentPink : colors.mutedForeground }]}>
-              {count > 0 ? count : ""}
-            </Text>
-          </TouchableOpacity>
+          <Text style={[styles.commentText, { color: "#c0c0d8", textAlign }]}>
+            {translated ?? item.text}
+          </Text>
+          <View style={[styles.commentActions, { flexDirection: dir }]}>
+            <TranslateButton
+              text={item.text}
+              isTranslated={translated !== null}
+              onTranslated={setTranslated}
+            />
+            <TouchableOpacity style={[styles.commentLikeRow, { flexDirection: dir }]} onPress={() => toggleCommentLike(item.id)}>
+              <Feather name="heart" size={12} color={liked ? colors.accentPink : colors.mutedForeground} />
+              <Text style={[styles.commentLikeCount, { color: liked ? colors.accentPink : colors.mutedForeground }]}>
+                {count > 0 ? count : ""}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     );
@@ -191,11 +208,12 @@ const styles = StyleSheet.create({
   comment: { gap: 10, paddingVertical: 12, borderBottomWidth: StyleSheet.hairlineWidth },
   commentAvatar: { width: 30, height: 30, borderRadius: 15, alignItems: "center", justifyContent: "center", flexShrink: 0 },
   commentAvatarText: { fontSize: 10, fontWeight: "700" as const, color: "#0a0a0f" },
-  commentBody: { flex: 1 },
-  commentHeader: { alignItems: "center", gap: 8, marginBottom: 4 },
+  commentBody: { flex: 1, gap: 4 },
+  commentHeader: { alignItems: "center", gap: 8, marginBottom: 2 },
   commentAuthor: { fontSize: 12, fontWeight: "600" as const },
   commentTime: { fontSize: 10 },
-  commentText: { fontSize: 13, lineHeight: 19, marginBottom: 6 },
+  commentText: { fontSize: 13, lineHeight: 19 },
+  commentActions: { alignItems: "center", gap: 12, marginTop: 2 },
   commentLikeRow: { alignItems: "center", gap: 4 },
   commentLikeCount: { fontSize: 11 },
   emptyComments: { alignItems: "center", paddingVertical: 40, gap: 12 },

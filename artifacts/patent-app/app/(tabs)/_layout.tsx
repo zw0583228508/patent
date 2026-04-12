@@ -5,8 +5,9 @@ import { router, Tabs } from "expo-router";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { SymbolView } from "expo-symbols";
 import React from "react";
-import { Platform, StyleSheet, TouchableOpacity, View, useColorScheme } from "react-native";
+import { Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 
+import { useSettings } from "@/context/SettingsContext";
 import { useColors } from "@/hooks/useColors";
 
 function FABButton() {
@@ -23,23 +24,24 @@ function FABButton() {
 }
 
 function NativeTabLayout() {
+  const { t } = useSettings();
   return (
     <NativeTabs>
       <NativeTabs.Trigger name="index">
         <Icon sf={{ default: "house", selected: "house.fill" }} />
-        <Label>בית</Label>
+        <Label>{t("tabHome")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="trending">
         <Icon sf={{ default: "chart.line.uptrend.xyaxis", selected: "chart.line.uptrend.xyaxis" }} />
-        <Label>טרנד</Label>
+        <Label>{t("tabTrending")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="search">
         <Icon sf={{ default: "magnifyingglass", selected: "magnifyingglass" }} />
-        <Label>חיפוש</Label>
+        <Label>{t("tabSearch")}</Label>
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="profile">
         <Icon sf={{ default: "person", selected: "person.fill" }} />
-        <Label>פרופיל</Label>
+        <Label>{t("tabProfile")}</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -47,8 +49,7 @@ function NativeTabLayout() {
 
 function ClassicTabLayout() {
   const colors = useColors();
-  const colorScheme = useColorScheme();
-  const isDark = true;
+  const { t } = useSettings();
   const isIOS = Platform.OS === "ios";
   const isWeb = Platform.OS === "web";
 
@@ -81,7 +82,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "בית",
+          title: t("tabHome"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="house" tintColor={color} size={24} />
@@ -93,7 +94,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="trending"
         options={{
-          title: "טרנד",
+          title: t("tabTrending"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="chart.line.uptrend.xyaxis" tintColor={color} size={24} />
@@ -105,7 +106,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="search"
         options={{
-          title: "חיפוש",
+          title: t("tabSearch"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="magnifyingglass" tintColor={color} size={24} />
@@ -117,7 +118,7 @@ function ClassicTabLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "פרופיל",
+          title: t("tabProfile"),
           tabBarIcon: ({ color }) =>
             isIOS ? (
               <SymbolView name="person" tintColor={color} size={24} />

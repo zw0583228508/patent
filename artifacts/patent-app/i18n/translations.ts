@@ -41,6 +41,7 @@ export const LANGUAGES: Lang[] = [
 export type TKeys =
   | "appName"
   | "all" | "home" | "food" | "business" | "health" | "tech" | "nature"
+  | "tabHome" | "tabTrending" | "tabSearch" | "tabProfile"
   | "workedForMe" | "didntWork" | "lookingForSolution"
   | "trending" | "trendingDesc" | "number1Today" | "rank"
   | "search" | "searchPlaceholder" | "noResults" | "chooseCategory"
@@ -56,7 +57,8 @@ export type TKeys =
   | "notifyTopics" | "notifyTopicsDesc"
   | "topicsTitle" | "topicsSubtitle"
   | "nothingInCategory" | "feedEmpty"
-  | "notificationsTitle" | "done" | "settingsTitle";
+  | "notificationsTitle" | "done" | "settingsTitle"
+  | "translate" | "showOriginal" | "translating" | "translateError";
 
 export type Translations = Record<TKeys, string>;
 
@@ -65,6 +67,7 @@ const t: Record<string, Translations> = {
     appName: "Patent",
     all: "הכל", home: "בית", food: "אוכל", business: "עסקים",
     health: "בריאות", tech: "טכנולוגיה", nature: "טבע",
+    tabHome: "בית", tabTrending: "טרנד", tabSearch: "חיפוש", tabProfile: "פרופיל",
     workedForMe: "עבד לי", didntWork: "לא עבד", lookingForSolution: "מחפש פתרון",
     trending: "טרנד", trendingDesc: "הכי מאומת ב-24 שעות", number1Today: "מספר 1 היום", rank: "#",
     search: "חיפוש", searchPlaceholder: "חפש טיפים ושאלות...", noResults: "אין תוצאות עבור", chooseCategory: "בחר קטגוריה לחיפוש",
@@ -81,11 +84,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "נושאים מועדפים", topicsSubtitle: "בחר אילו נושאים מעניינים אותך",
     nothingInCategory: "אין טיפים בקטגוריה זו", feedEmpty: "הפיד ריק",
     notificationsTitle: "הגדרות התראות", done: "סיום", settingsTitle: "הגדרות",
+    translate: "תרגם", showOriginal: "מקור", translating: "מתרגם...", translateError: "שגיאה בתרגום",
   },
   en: {
     appName: "Patent",
     all: "All", home: "Home", food: "Food", business: "Business",
     health: "Health", tech: "Technology", nature: "Nature",
+    tabHome: "Home", tabTrending: "Trending", tabSearch: "Search", tabProfile: "Profile",
     workedForMe: "Worked", didntWork: "Didn't Work", lookingForSolution: "Seeking Solution",
     trending: "Trending", trendingDesc: "Most verified in 24h", number1Today: "#1 Today", rank: "#",
     search: "Search", searchPlaceholder: "Search tips & questions...", noResults: "No results for", chooseCategory: "Choose a category to search",
@@ -102,11 +107,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "Favorite Topics", topicsSubtitle: "Choose which topics interest you",
     nothingInCategory: "No tips in this category", feedEmpty: "Feed is empty",
     notificationsTitle: "Notification Settings", done: "Done", settingsTitle: "Settings",
+    translate: "Translate", showOriginal: "Original", translating: "Translating...", translateError: "Translation failed",
   },
   ar: {
     appName: "Patent",
     all: "الكل", home: "المنزل", food: "طعام", business: "أعمال",
     health: "صحة", tech: "تكنولوجيا", nature: "طبيعة",
+    tabHome: "الرئيسية", tabTrending: "رائج", tabSearch: "بحث", tabProfile: "الملف",
     workedForMe: "نجح معي", didntWork: "لم ينجح", lookingForSolution: "يبحث عن حل",
     trending: "رائج", trendingDesc: "الأكثر تحققاً في 24 ساعة", number1Today: "الأول اليوم", rank: "#",
     search: "بحث", searchPlaceholder: "ابحث عن نصائح وأسئلة...", noResults: "لا نتائج لـ", chooseCategory: "اختر فئة للبحث",
@@ -123,11 +130,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "المواضيع المفضلة", topicsSubtitle: "اختر المواضيع التي تهمك",
     nothingInCategory: "لا نصائح في هذه الفئة", feedEmpty: "الخلاصة فارغة",
     notificationsTitle: "إعدادات الإشعارات", done: "تم", settingsTitle: "الإعدادات",
+    translate: "ترجم", showOriginal: "الأصل", translating: "جاري الترجمة...", translateError: "فشل الترجمة",
   },
   es: {
     appName: "Patent",
     all: "Todo", home: "Hogar", food: "Comida", business: "Negocios",
     health: "Salud", tech: "Tecnología", nature: "Naturaleza",
+    tabHome: "Inicio", tabTrending: "Tendencia", tabSearch: "Buscar", tabProfile: "Perfil",
     workedForMe: "Me funcionó", didntWork: "No funcionó", lookingForSolution: "Busca solución",
     trending: "Tendencia", trendingDesc: "Más verificado en 24h", number1Today: "#1 Hoy", rank: "#",
     search: "Buscar", searchPlaceholder: "Buscar consejos y preguntas...", noResults: "Sin resultados para", chooseCategory: "Elige una categoría",
@@ -144,11 +153,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "Temas Favoritos", topicsSubtitle: "Elige qué temas te interesan",
     nothingInCategory: "No hay consejos en esta categoría", feedEmpty: "El feed está vacío",
     notificationsTitle: "Ajustes de notificaciones", done: "Listo", settingsTitle: "Ajustes",
+    translate: "Traducir", showOriginal: "Original", translating: "Traduciendo...", translateError: "Error de traducción",
   },
   fr: {
     appName: "Patent",
     all: "Tout", home: "Maison", food: "Nourriture", business: "Affaires",
     health: "Santé", tech: "Technologie", nature: "Nature",
+    tabHome: "Accueil", tabTrending: "Tendance", tabSearch: "Recherche", tabProfile: "Profil",
     workedForMe: "Ça a marché", didntWork: "N'a pas marché", lookingForSolution: "Cherche solution",
     trending: "Tendance", trendingDesc: "Plus vérifié en 24h", number1Today: "N°1 Aujourd'hui", rank: "#",
     search: "Recherche", searchPlaceholder: "Chercher conseils et questions...", noResults: "Aucun résultat pour", chooseCategory: "Choisir une catégorie",
@@ -165,11 +176,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "Sujets Favoris", topicsSubtitle: "Choisissez les sujets qui vous intéressent",
     nothingInCategory: "Aucun conseil dans cette catégorie", feedEmpty: "Le fil est vide",
     notificationsTitle: "Paramètres de notifications", done: "Terminé", settingsTitle: "Paramètres",
+    translate: "Traduire", showOriginal: "Original", translating: "Traduction...", translateError: "Erreur de traduction",
   },
   de: {
     appName: "Patent",
     all: "Alle", home: "Zuhause", food: "Essen", business: "Business",
     health: "Gesundheit", tech: "Technologie", nature: "Natur",
+    tabHome: "Start", tabTrending: "Trending", tabSearch: "Suchen", tabProfile: "Profil",
     workedForMe: "Hat geholfen", didntWork: "Hat nicht geholfen", lookingForSolution: "Suche Lösung",
     trending: "Trending", trendingDesc: "Am meisten bestätigt in 24h", number1Today: "#1 Heute", rank: "#",
     search: "Suchen", searchPlaceholder: "Tipps & Fragen suchen...", noResults: "Keine Ergebnisse für", chooseCategory: "Kategorie wählen",
@@ -186,11 +199,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "Lieblingsthemen", topicsSubtitle: "Wähle welche Themen dich interessieren",
     nothingInCategory: "Keine Tipps in dieser Kategorie", feedEmpty: "Feed ist leer",
     notificationsTitle: "Benachrichtigungseinstellungen", done: "Fertig", settingsTitle: "Einstellungen",
+    translate: "Übersetzen", showOriginal: "Original", translating: "Übersetze...", translateError: "Übersetzungsfehler",
   },
   ru: {
     appName: "Patent",
     all: "Все", home: "Дом", food: "Еда", business: "Бизнес",
     health: "Здоровье", tech: "Технологии", nature: "Природа",
+    tabHome: "Главная", tabTrending: "Тренды", tabSearch: "Поиск", tabProfile: "Профиль",
     workedForMe: "Помогло", didntWork: "Не помогло", lookingForSolution: "Ищет решение",
     trending: "Тренды", trendingDesc: "Наиболее подтверждено за 24ч", number1Today: "#1 Сегодня", rank: "#",
     search: "Поиск", searchPlaceholder: "Поиск советов и вопросов...", noResults: "Нет результатов для", chooseCategory: "Выберите категорию",
@@ -207,11 +222,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "Любимые темы", topicsSubtitle: "Выберите интересующие вас темы",
     nothingInCategory: "В этой категории нет советов", feedEmpty: "Лента пуста",
     notificationsTitle: "Настройки уведомлений", done: "Готово", settingsTitle: "Настройки",
+    translate: "Перевести", showOriginal: "Оригинал", translating: "Перевод...", translateError: "Ошибка перевода",
   },
   zh: {
     appName: "Patent",
     all: "全部", home: "家庭", food: "美食", business: "商务",
     health: "健康", tech: "科技", nature: "自然",
+    tabHome: "首页", tabTrending: "热门", tabSearch: "搜索", tabProfile: "我的",
     workedForMe: "有效", didntWork: "无效", lookingForSolution: "寻找解决方案",
     trending: "热门", trendingDesc: "24小时内验证最多", number1Today: "今日第一", rank: "#",
     search: "搜索", searchPlaceholder: "搜索提示和问题...", noResults: "无结果：", chooseCategory: "选择分类",
@@ -228,11 +245,13 @@ const t: Record<string, Translations> = {
     topicsTitle: "喜爱的话题", topicsSubtitle: "选择您感兴趣的话题",
     nothingInCategory: "此分类无提示", feedEmpty: "动态为空",
     notificationsTitle: "通知设置", done: "完成", settingsTitle: "设置",
+    translate: "翻译", showOriginal: "原文", translating: "翻译中...", translateError: "翻译失败",
   },
   pt: {
     appName: "Patent",
     all: "Tudo", home: "Casa", food: "Comida", business: "Negócios",
     health: "Saúde", tech: "Tecnologia", nature: "Natureza",
+    tabHome: "Início", tabTrending: "Tendência", tabSearch: "Pesquisar", tabProfile: "Perfil",
     workedForMe: "Funcionou", didntWork: "Não funcionou", lookingForSolution: "Procura solução",
     trending: "Tendência", trendingDesc: "Mais verificado em 24h", number1Today: "#1 Hoje", rank: "#",
     search: "Pesquisar", searchPlaceholder: "Pesquisar dicas e perguntas...", noResults: "Sem resultados para", chooseCategory: "Escolha uma categoria",
@@ -249,6 +268,7 @@ const t: Record<string, Translations> = {
     topicsTitle: "Tópicos Favoritos", topicsSubtitle: "Escolha quais tópicos lhe interessam",
     nothingInCategory: "Nenhuma dica nesta categoria", feedEmpty: "O feed está vazio",
     notificationsTitle: "Configurações de notificações", done: "Concluído", settingsTitle: "Configurações",
+    translate: "Traduzir", showOriginal: "Original", translating: "Traduzindo...", translateError: "Erro de tradução",
   },
 };
 

@@ -11,6 +11,7 @@ import {
 } from "react-native";
 
 import CommentsSheet from "@/components/CommentsSheet";
+import TranslateButton from "@/components/TranslateButton";
 import { useFeed } from "@/context/FeedContext";
 import { useSettings } from "@/context/SettingsContext";
 import { Tip } from "@/data/mockData";
@@ -31,10 +32,15 @@ export default function TipCard({ tip }: Props) {
   const saved = savedIds.has(tip.id);
   const liked = likedIds.has(tip.id);
   const [showComments, setShowComments] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
 
   const scaleWorked = React.useRef(new Animated.Value(1)).current;
   const scaleNot = React.useRef(new Animated.Value(1)).current;
   const scaleLike = React.useRef(new Animated.Value(1)).current;
+
+  const dir = isRTL ? "row-reverse" : "row";
+  const textAlign = isRTL ? "right" : "left";
+  const alignSelf = isRTL ? "flex-start" : "flex-end";
 
   function animatePress(anim: Animated.Value) {
     Animated.sequence([
@@ -64,19 +70,19 @@ export default function TipCard({ tip }: Props) {
     <>
       <View style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]} testID={`tip-card-${tip.id}`}>
         {tip.isTrending && (
-          <View style={[styles.trendingBadge, { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)" }]}>
+          <View style={[styles.trendingBadge, { backgroundColor: "rgba(240,224,64,0.12)", borderColor: "rgba(240,224,64,0.3)", flexDirection: dir, alignSelf }]}>
             <Feather name="trending-up" size={10} color={colors.primary} />
-            <Text style={[styles.trendingText, { color: colors.primary }]}>טרנד</Text>
+            <Text style={[styles.trendingText, { color: colors.primary }]}>{t("trending")}</Text>
           </View>
         )}
 
-        <View style={styles.header}>
+        <View style={[styles.header, { flexDirection: dir }]}>
           <View style={[styles.avatar, { backgroundColor: tip.avatarGradient[0] }]}>
             <Text style={styles.avatarText}>{tip.initials}</Text>
           </View>
-          <View style={styles.meta}>
+          <View style={[styles.meta, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
             <Text style={[styles.author, { color: colors.foreground }]}>{tip.author}</Text>
-            <View style={styles.catRow}>
+            <View style={[styles.catRow, { flexDirection: dir }]}>
               <Feather name={tip.categoryIcon as any} size={10} color={colors.mutedForeground} />
               <Text style={[styles.category, { color: colors.mutedForeground }]}> {tip.category}</Text>
             </View>
@@ -86,13 +92,22 @@ export default function TipCard({ tip }: Props) {
           </View>
         </View>
 
-        <Text style={[styles.tipText, { color: "#c0c0d8" }]}>{tip.text}</Text>
+        <Text style={[styles.tipText, { color: "#c0c0d8", textAlign }]}>
+          {translatedText ?? tip.text}
+        </Text>
 
-        <View style={styles.voteRow}>
+        <TranslateButton
+          text={tip.text}
+          isTranslated={translatedText !== null}
+          onTranslated={setTranslatedText}
+        />
+
+        <View style={[styles.voteRow, { flexDirection: dir }]}>
           <Animated.View style={{ flex: 1, transform: [{ scale: scaleWorked }] }}>
             <TouchableOpacity
               style={[
                 styles.voteBtn,
+                { flexDirection: dir },
                 {
                   backgroundColor: myVote === "worked" ? "rgba(64,224,64,0.22)" : "rgba(64,224,64,0.10)",
                   borderColor: myVote === "worked" ? "rgba(64,224,64,0.6)" : "rgba(64,224,64,0.25)",
@@ -112,6 +127,7 @@ export default function TipCard({ tip }: Props) {
             <TouchableOpacity
               style={[
                 styles.voteBtn,
+                { flexDirection: dir },
                 {
                   backgroundColor: myVote === "didnt" ? "rgba(240,64,64,0.2)" : "rgba(240,64,64,0.08)",
                   borderColor: myVote === "didnt" ? "rgba(240,64,64,0.6)" : "rgba(240,64,64,0.2)",
@@ -128,10 +144,10 @@ export default function TipCard({ tip }: Props) {
           </Animated.View>
         </View>
 
-        <View style={styles.actionsRow}>
+        <View style={[styles.actionsRow, { flexDirection: dir }]}>
           <Animated.View style={{ transform: [{ scale: scaleLike }] }}>
             <TouchableOpacity
-              style={styles.actionBtn}
+              style={[styles.actionBtn, { flexDirection: dir }]}
               onPress={handleLike}
               testID={`like-${tip.id}`}
             >
@@ -143,7 +159,7 @@ export default function TipCard({ tip }: Props) {
           </Animated.View>
 
           <TouchableOpacity
-            style={styles.actionBtn}
+            style={[styles.actionBtn, { flexDirection: dir }]}
             onPress={() => setShowComments(true)}
             testID={`comments-${tip.id}`}
           >
@@ -159,7 +175,7 @@ export default function TipCard({ tip }: Props) {
             <Feather name="bookmark" size={16} color={saved ? colors.primary : colors.mutedForeground} />
           </TouchableOpacity>
 
-          <Text style={[styles.timestamp, { color: "#4a4a6a" }]}>{tip.timestamp}</Text>
+          <Text style={[styles.timestamp, { color: "#4a4a6a", marginStart: "auto" }]}>{tip.timestamp}</Text>
         </View>
       </View>
 
@@ -179,11 +195,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     marginBottom: 10,
+    gap: 10,
   },
   header: {
-    flexDirection: "row-reverse",
     alignItems: "center",
-    marginBottom: 10,
     gap: 10,
   },
   avatar: {
@@ -200,14 +215,12 @@ const styles = StyleSheet.create({
   },
   meta: {
     flex: 1,
-    alignItems: "flex-end",
   },
   author: {
     fontSize: 12,
     fontWeight: "600" as const,
   },
   catRow: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     marginTop: 2,
   },
@@ -225,14 +238,11 @@ const styles = StyleSheet.create({
     fontWeight: "600" as const,
   },
   trendingBadge: {
-    flexDirection: "row-reverse",
     alignItems: "center",
-    alignSelf: "flex-start",
     borderRadius: 100,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderWidth: 1,
-    marginBottom: 8,
     gap: 4,
   },
   trendingText: {
@@ -242,16 +252,11 @@ const styles = StyleSheet.create({
   tipText: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 10,
-    textAlign: "right",
   },
   voteRow: {
-    flexDirection: "row-reverse",
     gap: 8,
-    marginBottom: 10,
   },
   voteBtn: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 8,
@@ -264,12 +269,10 @@ const styles = StyleSheet.create({
     fontWeight: "500" as const,
   },
   actionsRow: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     gap: 16,
   },
   actionBtn: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     gap: 4,
   },
@@ -278,6 +281,5 @@ const styles = StyleSheet.create({
   },
   timestamp: {
     fontSize: 10,
-    marginLeft: "auto",
   },
 });

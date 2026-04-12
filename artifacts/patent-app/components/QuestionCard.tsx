@@ -11,7 +11,9 @@ import {
 } from "react-native";
 
 import CommentsSheet from "@/components/CommentsSheet";
+import TranslateButton from "@/components/TranslateButton";
 import { useFeed } from "@/context/FeedContext";
+import { useSettings } from "@/context/SettingsContext";
 import { Question } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 
@@ -24,10 +26,16 @@ type Props = { question: Question };
 
 export default function QuestionCard({ question }: Props) {
   const colors = useColors();
+  const { t, isRTL } = useSettings();
   const { likedIds, comments, toggleLike } = useFeed();
   const liked = likedIds.has(question.id);
   const [showComments, setShowComments] = useState(false);
+  const [translatedText, setTranslatedText] = useState<string | null>(null);
   const scaleLike = React.useRef(new Animated.Value(1)).current;
+
+  const dir = isRTL ? "row-reverse" : "row";
+  const textAlign = isRTL ? "right" : "left";
+  const alignSelf = isRTL ? "flex-end" : "flex-start";
 
   function handleLike() {
     if (Platform.OS !== "web") Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -53,30 +61,39 @@ export default function QuestionCard({ question }: Props) {
         ]}
         testID={`question-card-${question.id}`}
       >
-        <View style={[styles.qLabel, { backgroundColor: "rgba(64,224,240,0.1)" }]}>
+        <View style={[styles.qLabel, { backgroundColor: "rgba(64,224,240,0.1)", flexDirection: dir, alignSelf }]}>
           <Feather name="help-circle" size={10} color={colors.accentCyan} />
-          <Text style={[styles.qLabelText, { color: colors.accentCyan }]}>מחפש פתרון</Text>
+          <Text style={[styles.qLabelText, { color: colors.accentCyan }]}>{t("lookingForSolution")}</Text>
         </View>
 
-        <View style={styles.header}>
+        <View style={[styles.header, { flexDirection: dir }]}>
           <View style={[styles.avatar, { backgroundColor: question.avatarGradient[0] }]}>
             <Text style={styles.avatarText}>{question.initials}</Text>
           </View>
-          <View style={styles.meta}>
+          <View style={[styles.meta, { alignItems: isRTL ? "flex-end" : "flex-start" }]}>
             <Text style={[styles.author, { color: colors.foreground }]}>{question.author}</Text>
-            <View style={styles.catRow}>
+            <View style={[styles.catRow, { flexDirection: dir }]}>
               <Feather name={question.categoryIcon as any} size={10} color={colors.mutedForeground} />
               <Text style={[styles.category, { color: colors.mutedForeground }]}> {question.category}</Text>
             </View>
           </View>
         </View>
 
-        <Text style={[styles.qText, { color: "#c0c0d8" }]}>{question.text}</Text>
+        <Text style={[styles.qText, { color: "#c0c0d8", textAlign }]}>
+          {translatedText ?? question.text}
+        </Text>
 
-        <View style={styles.footer}>
+        <TranslateButton
+          text={question.text}
+          isTranslated={translatedText !== null}
+          onTranslated={setTranslatedText}
+        />
+
+        <View style={[styles.footer, { flexDirection: dir }]}>
           <TouchableOpacity
             style={[
               styles.answerBtn,
+              { flexDirection: dir },
               {
                 backgroundColor: "rgba(64,224,240,0.1)",
                 borderColor: "rgba(64,224,240,0.3)",
@@ -87,14 +104,14 @@ export default function QuestionCard({ question }: Props) {
           >
             <Feather name="edit-3" size={12} color={colors.accentCyan} />
             <Text style={[styles.answerBtnText, { color: colors.accentCyan }]}>
-              ענה · {commentCount}
+              {t("answer")} · {commentCount}
             </Text>
           </TouchableOpacity>
 
-          <View style={styles.rightActions}>
+          <View style={[styles.rightActions, { flexDirection: dir }]}>
             <Animated.View style={{ transform: [{ scale: scaleLike }] }}>
               <TouchableOpacity
-                style={styles.actionBtn}
+                style={[styles.actionBtn, { flexDirection: dir }]}
                 onPress={handleLike}
                 testID={`like-question-${question.id}`}
               >
@@ -127,15 +144,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 16,
     marginBottom: 10,
+    gap: 10,
   },
   qLabel: {
-    flexDirection: "row-reverse",
     alignItems: "center",
-    alignSelf: "flex-end",
     borderRadius: 100,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    marginBottom: 10,
     gap: 4,
   },
   qLabelText: {
@@ -145,9 +160,7 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
   },
   header: {
-    flexDirection: "row-reverse",
     alignItems: "center",
-    marginBottom: 10,
     gap: 10,
   },
   avatar: {
@@ -164,14 +177,12 @@ const styles = StyleSheet.create({
   },
   meta: {
     flex: 1,
-    alignItems: "flex-end",
   },
   author: {
     fontSize: 12,
     fontWeight: "600" as const,
   },
   catRow: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     marginTop: 2,
   },
@@ -181,16 +192,12 @@ const styles = StyleSheet.create({
   qText: {
     fontSize: 13,
     lineHeight: 20,
-    marginBottom: 12,
-    textAlign: "right",
   },
   footer: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     justifyContent: "space-between",
   },
   answerBtn: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     borderRadius: 8,
     paddingVertical: 7,
@@ -203,12 +210,10 @@ const styles = StyleSheet.create({
     fontWeight: "500" as const,
   },
   rightActions: {
-    flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
   actionBtn: {
-    flexDirection: "row-reverse",
     alignItems: "center",
     gap: 4,
   },
