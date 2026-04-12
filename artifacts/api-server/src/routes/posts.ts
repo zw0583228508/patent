@@ -130,7 +130,7 @@ router.post("/:id/like", async (req, res) => {
     await db.update(posts).set({ likesCount: sql`${posts.likesCount} + 1` }).where(eq(posts.id, req.params.id));
     res.json({ liked: true });
 
-    const [post] = await db.select({ authorId: posts.authorId, title: posts.title }).from(posts).where(eq(posts.id, req.params.id));
+    const [post] = await db.select({ authorId: posts.authorId, title: posts.title, type: posts.type }).from(posts).where(eq(posts.id, req.params.id));
     const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
     if (post && post.authorId !== userId) {
       sendPushToUser(post.authorId, {
@@ -140,6 +140,7 @@ router.post("/:id/like", async (req, res) => {
         data: { type: "like", postId: req.params.id },
         actorId: userId,
         postId: req.params.id,
+        postType: post.type === "question" ? "question" : "tip",
       });
     }
   } catch (err) {
@@ -203,7 +204,7 @@ router.post("/:id/vote", async (req, res) => {
     res.json({ vote });
 
     if (vote === 1) {
-      const [post] = await db.select({ authorId: posts.authorId, title: posts.title }).from(posts).where(eq(posts.id, req.params.id));
+      const [post] = await db.select({ authorId: posts.authorId, title: posts.title, type: posts.type }).from(posts).where(eq(posts.id, req.params.id));
       const [actor] = await db.select({ name: users.name }).from(users).where(eq(users.id, userId));
       if (post && post.authorId !== userId) {
         sendPushToUser(post.authorId, {
@@ -213,6 +214,7 @@ router.post("/:id/vote", async (req, res) => {
           data: { type: "vote", postId: req.params.id, vote: 1 },
           actorId: userId,
           postId: req.params.id,
+          postType: post.type === "question" ? "question" : "tip",
         });
       }
     }

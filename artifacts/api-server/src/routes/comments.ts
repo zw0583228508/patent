@@ -41,7 +41,7 @@ router.post("/", async (req, res) => {
 
     res.status(201).json({ ...comment, author });
 
-    const [post] = await db.select({ authorId: posts.authorId, title: posts.title }).from(posts).where(eq(posts.id, postId));
+    const [post] = await db.select({ authorId: posts.authorId, title: posts.title, type: posts.type }).from(posts).where(eq(posts.id, postId));
     if (post && post.authorId !== authorId) {
       sendPushToUser(post.authorId, {
         type: "comment",
@@ -50,6 +50,7 @@ router.post("/", async (req, res) => {
         data: { type: "comment", postId, commentId: id },
         actorId: authorId,
         postId,
+        postType: post.type === "question" ? "question" : "tip",
       });
     }
   } catch (err) {

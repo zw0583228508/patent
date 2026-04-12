@@ -15,7 +15,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AuthContext";
-import { useSettings } from "@/context/SettingsContext";
+import { ContentFilter, NotifFilters, useSettings } from "@/context/SettingsContext";
 import { CATEGORIES } from "@/data/mockData";
 import { useColors } from "@/hooks/useColors";
 import { LANGUAGES } from "@/i18n/translations";
@@ -39,19 +39,42 @@ function getCatLabel(catId: string, langCode: string): string {
   return CATEGORY_TRANSLATIONS[langCode]?.[catId] ?? CATEGORY_TRANSLATIONS["en"]?.[catId] ?? catId;
 }
 
+type FilterOption = { value: ContentFilter; labelKey: "notifFilterAll" | "notifFilterTips" | "notifFilterQuestions" | "notifFilterComments" };
+
+const FILTER_OPTIONS_BASE: FilterOption[] = [
+  { value: "all", labelKey: "notifFilterAll" },
+  { value: "tips", labelKey: "notifFilterTips" },
+  { value: "questions", labelKey: "notifFilterQuestions" },
+];
+
+const FILTER_OPTIONS_WITH_COMMENTS: FilterOption[] = [
+  ...FILTER_OPTIONS_BASE,
+  { value: "comments", labelKey: "notifFilterComments" },
+];
+
 export default function SettingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { t, langCode, setLangCode, isRTL, notifs, setNotif, followedTopics, toggleTopic } = useSettings();
+  const { t, langCode, setLangCode, isRTL, notifs, setNotif, notifFilters, setNotifFilter, followedTopics, toggleTopic } = useSettings();
   const { user } = useAuth();
   const [section, setSection] = useState<Section>("main");
 
   function handleNotifToggle(key: "answers" | "comments" | "topics", val: boolean) {
     setNotif(key, val);
     if (!user?.id) return;
-    if (key === "answers") api.users.saveNotifPrefs(user.id, { notifVotes: val }).catch(() => {});
-    if (key === "comments") api.users.saveNotifPrefs(user.id, { notifComments: val }).catch(() => {});
+    const filter = notifFilters[key];
+    if (key === "answers") api.users.saveNotifPrefs(user.id, { notifVotes: val, notifVotesFilter: filter }).catch(() => {});
+    if (key === "comments") api.users.saveNotifPrefs(user.id, { notifComments: val, notifCommentsFilter: filter }).catch(() => {});
   }
+
+  function handleFilterChange(key: keyof NotifFilters, val: ContentFilter) {
+    setNotifFilter(key, val);
+    if (!user?.id) return;
+    if (key === "answers") api.users.saveNotifPrefs(user.id, { notifVotes: notifs.answers, notifVotesFilter: val }).catch(() => {});
+    if (key === "comments") api.users.saveNotifPrefs(user.id, { notifComments: notifs.comments, notifCommentsFilter: val }).catch(() => {});
+    if (key === "topics") api.users.saveNotifPrefs(user.id, { notifTopicsFilter: val }).catch(() => {});
+  }
+
   const [langSearch, setLangSearch] = useState("");
   const topPad = Platform.OS === "web" ? 67 : insets.top;
   const dir = isRTL ? "row-reverse" : "row";
@@ -158,8 +181,12 @@ export default function SettingsScreen() {
             desc={t("notifyAnswersDesc")}
             value={notifs.answers}
             onToggle={(v) => handleNotifToggle("answers", v)}
+            filterValue={notifFilters.answers}
+            onFilterChange={(v) => handleFilterChange("answers", v)}
+            filterOptions={FILTER_OPTIONS_BASE}
             isRTL={isRTL}
             colors={colors}
+            t={t}
             testID="notif-answers"
           />
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -168,8 +195,12 @@ export default function SettingsScreen() {
             desc={t("notifyCommentsDesc")}
             value={notifs.comments}
             onToggle={(v) => handleNotifToggle("comments", v)}
+            filterValue={notifFilters.comments}
+            onFilterChange={(v) => handleFilterChange("comments", v)}
+            filterOptions={FILTER_OPTIONS_WITH_COMMENTS}
             isRTL={isRTL}
             colors={colors}
+            t={t}
             testID="notif-comments"
           />
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
@@ -178,8 +209,12 @@ export default function SettingsScreen() {
             desc={t("notifyTopicsDesc")}
             value={notifs.topics}
             onToggle={(v) => handleNotifToggle("topics", v)}
+            filterValue={notifFilters.topics}
+            onFilterChange={(v) => handleFilterChange("topics", v)}
+            filterOptions={FILTER_OPTIONS_BASE}
             isRTL={isRTL}
             colors={colors}
+            t={t}
             testID="notif-topics"
           />
         </View>
@@ -269,25 +304,70 @@ export default function SettingsScreen() {
   );
 }
 
-function NotifRow({ label, desc, value, onToggle, isRTL, colors, testID }: {
-  label: string; desc: string; value: boolean;
-  onToggle: (v: boolean) => void; isRTL: boolean; colors: any; testID: string;
+function NotifRow({ label, desc, value, onToggle, filterValue, onFilterChange, filterOptions, isRTL, colors, t, testID }: {
+  label: string;
+  desc: string;
+  value: boolean;
+  onToggle: (v: boolean) => void;
+  filterValue: ContentFilter;
+  onFilterChange: (v: ContentFilter) => void;
+  filterOptions: { value: ContentFilter; labelKey: "notifFilterAll" | "notifFilterTips" | "notifFilterQuestions" | "notifFilterComments" }[];
+  isRTL: boolean;
+  colors: any;
+  t: (key: any) => string;
+  testID: string;
 }) {
   const dir = isRTL ? "row-reverse" : "row";
   return (
-    <View style={[styles.notifRow, { flexDirection: dir }]}>
-      <View style={styles.notifText}>
-        <Text style={[styles.notifLabel, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>{label}</Text>
-        <Text style={[styles.notifDesc, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>{desc}</Text>
+    <View>
+      <View style={[styles.notifRow, { flexDirection: dir }]}>
+        <View style={styles.notifText}>
+          <Text style={[styles.notifLabel, { color: colors.foreground, textAlign: isRTL ? "right" : "left" }]}>{label}</Text>
+          <Text style={[styles.notifDesc, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>{desc}</Text>
+        </View>
+        <Switch
+          value={value}
+          onValueChange={onToggle}
+          trackColor={{ false: colors.border, true: "rgba(240,224,64,0.4)" }}
+          thumbColor={value ? colors.primary : colors.mutedForeground}
+          testID={testID}
+          style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
+        />
       </View>
-      <Switch
-        value={value}
-        onValueChange={onToggle}
-        trackColor={{ false: colors.border, true: "rgba(240,224,64,0.4)" }}
-        thumbColor={value ? colors.primary : colors.mutedForeground}
-        testID={testID}
-        style={{ marginLeft: isRTL ? 0 : "auto", marginRight: isRTL ? "auto" : 0 }}
-      />
+
+      {value && (
+        <View style={[styles.filterSection, { borderTopColor: colors.border }]}>
+          <Text style={[styles.filterLabel, { color: colors.mutedForeground, textAlign: isRTL ? "right" : "left" }]}>
+            {t("notifFilterLabel")}
+          </Text>
+          <View style={[styles.filterChips, { flexDirection: dir, flexWrap: "wrap" }]}>
+            {filterOptions.map((opt) => {
+              const active = filterValue === opt.value;
+              return (
+                <TouchableOpacity
+                  key={opt.value}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: active ? "rgba(240,224,64,0.15)" : colors.surface2,
+                      borderColor: active ? colors.primary : colors.border,
+                    },
+                  ]}
+                  onPress={() => onFilterChange(opt.value)}
+                  testID={`${testID}-filter-${opt.value}`}
+                >
+                  {active && (
+                    <Feather name="check" size={11} color={colors.primary} />
+                  )}
+                  <Text style={[styles.chipText, { color: active ? colors.primary : colors.mutedForeground }]}>
+                    {t(opt.labelKey)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -324,6 +404,30 @@ const styles = StyleSheet.create({
   notifText: { flex: 1 },
   notifLabel: { fontSize: 15, fontWeight: "500" as const, marginBottom: 3 },
   notifDesc: { fontSize: 12, lineHeight: 16 },
+  filterSection: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    paddingHorizontal: 16,
+    paddingBottom: 14,
+    paddingTop: 10,
+  },
+  filterLabel: {
+    fontSize: 11,
+    fontWeight: "600" as const,
+    letterSpacing: 0.5,
+    textTransform: "uppercase",
+    marginBottom: 10,
+  },
+  filterChips: { gap: 8 },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  chipText: { fontSize: 13, fontWeight: "500" as const },
   topicRow: { alignItems: "center", padding: 16, gap: 12 },
   topicIconWrap: { width: 36, height: 36, borderRadius: 10, alignItems: "center", justifyContent: "center" },
   topicLabel: { fontSize: 15, flex: 1 },

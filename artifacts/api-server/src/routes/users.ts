@@ -50,12 +50,16 @@ router.post("/upsert", async (req, res) => {
 
 router.post("/:id/notif-prefs", async (req, res) => {
   try {
-    const { notifComments, notifLikes, notifFollows, notifVotes } = req.body;
+    const { notifComments, notifLikes, notifFollows, notifVotes, notifCommentsFilter, notifVotesFilter, notifTopicsFilter } = req.body;
     const update: Partial<typeof users.$inferInsert> = {};
     if (notifComments !== undefined) update.notifComments = Boolean(notifComments);
     if (notifLikes !== undefined) update.notifLikes = Boolean(notifLikes);
     if (notifFollows !== undefined) update.notifFollows = Boolean(notifFollows);
     if (notifVotes !== undefined) update.notifVotes = Boolean(notifVotes);
+    const validFilters = ["all", "tips", "questions", "comments"];
+    if (notifCommentsFilter && validFilters.includes(notifCommentsFilter)) update.notifCommentsFilter = notifCommentsFilter;
+    if (notifVotesFilter && validFilters.includes(notifVotesFilter)) update.notifVotesFilter = notifVotesFilter;
+    if (notifTopicsFilter && validFilters.includes(notifTopicsFilter)) update.notifTopicsFilter = notifTopicsFilter;
 
     if (Object.keys(update).length === 0) return res.status(400).json({ error: "No prefs to update" });
 

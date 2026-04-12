@@ -71,6 +71,8 @@ export type TKeys =
   | "toastFollowing" | "toastUnfollowed" | "toastVotedWorked" | "toastVotedDidnt"
   | "toastCommentAdded" | "toastPostPublished"
   | "toastReposted" | "toastUnreposted" | "reposted" | "youReposted"
+  | "notifFilterAll" | "notifFilterTips" | "notifFilterQuestions" | "notifFilterComments"
+  | "notifFilterLabel"
   | "share" | "viewProfile" | "loadMore" | "noMoreItems"
   | "users" | "searchUsers" | "noUsersFound"
   | "privacyPolicy" | "termsOfService" | "legalSection" | "aboutApp" | "appVersion"
@@ -121,6 +123,8 @@ const t: Record<string, Partial<Translations>> = {
     toastCommentAdded: "התגובה נוספה!", toastPostPublished: "הפוסט פורסם!",
     toastReposted: "פורסם מחדש!", toastUnreposted: "הסרת את הפרסום המחדש",
     reposted: "פרסם מחדש", youReposted: "פרסמת מחדש",
+    notifFilterLabel: "קבל התראות על",
+    notifFilterAll: "הכל", notifFilterTips: "טיפים", notifFilterQuestions: "שאלות", notifFilterComments: "תגובות",
     share: "שתף", viewProfile: "צפה בפרופיל",
     loadMore: "טען עוד", noMoreItems: "הגעת לסוף הפיד",
     users: "משתמשים", searchUsers: "חפש משתמשים...", noUsersFound: "לא נמצאו משתמשים",
@@ -170,6 +174,8 @@ const t: Record<string, Partial<Translations>> = {
     toastCommentAdded: "Comment added!", toastPostPublished: "Post published!",
     toastReposted: "Reposted!", toastUnreposted: "Repost removed",
     reposted: "reposted", youReposted: "You reposted",
+    notifFilterLabel: "Notify me about",
+    notifFilterAll: "All", notifFilterTips: "Tips", notifFilterQuestions: "Questions", notifFilterComments: "Comments",
     share: "Share", viewProfile: "View Profile",
     loadMore: "Load More", noMoreItems: "You've reached the end",
     users: "Users", searchUsers: "Search users...", noUsersFound: "No users found",

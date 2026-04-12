@@ -6,6 +6,7 @@ import { logger } from "./logger";
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 
 export type NotifType = "like" | "comment" | "follow" | "vote";
+export type PostType = "tip" | "question" | "comment";
 
 export interface PushPayload {
   type: NotifType;
@@ -14,6 +15,7 @@ export interface PushPayload {
   data?: Record<string, unknown>;
   actorId?: string;
   postId?: string;
+  postType?: PostType;
 }
 
 type UserPrefs = {
@@ -22,6 +24,9 @@ type UserPrefs = {
   notifComments: boolean | null;
   notifFollows: boolean | null;
   notifVotes: boolean | null;
+  notifCommentsFilter: string | null;
+  notifVotesFilter: string | null;
+  notifTopicsFilter: string | null;
 };
 
 const PREF_KEY: Record<NotifType, keyof UserPrefs> = {
@@ -30,6 +35,19 @@ const PREF_KEY: Record<NotifType, keyof UserPrefs> = {
   follow: "notifFollows",
   vote: "notifVotes",
 };
+
+const FILTER_KEY: Record<NotifType, keyof UserPrefs | null> = {
+  like: null,
+  comment: "notifCommentsFilter",
+  follow: null,
+  vote: "notifVotesFilter",
+};
+
+function passesContentFilter(filter: string | null, postType: PostType | undefined): boolean {
+  if (!filter || filter === "all") return true;
+  if (!postType) return true;
+  return filter === postType;
+}
 
 export async function sendPushToUser(userId: string, payload: PushPayload): Promise<void> {
   try {
@@ -40,6 +58,9 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
         notifComments: users.notifComments,
         notifFollows: users.notifFollows,
         notifVotes: users.notifVotes,
+        notifCommentsFilter: users.notifCommentsFilter,
+        notifVotesFilter: users.notifVotesFilter,
+        notifTopicsFilter: users.notifTopicsFilter,
       })
       .from(users)
       .where(eq(users.id, userId));
@@ -63,6 +84,15 @@ export async function sendPushToUser(userId: string, payload: PushPayload): Prom
     if (!prefEnabled) {
       logger.debug({ userId, type: payload.type }, "Push suppressed by user preference");
       return;
+    }
+
+    const filterKey = FILTER_KEY[payload.type];
+    if (filterKey) {
+      const filter = user[filterKey] as string | null;
+      if (!passesContentFilter(filter, payload.postType)) {
+        logger.debug({ userId, type: payload.type, filter, postType: payload.postType }, "Push suppressed by content filter");
+        return;
+      }
     }
 
     if (!user.pushToken) return;

@@ -26,6 +26,9 @@ export const users = pgTable("users", {
   notifLikes: boolean("notif_likes").default(true),
   notifFollows: boolean("notif_follows").default(true),
   notifVotes: boolean("notif_votes").default(true),
+  notifCommentsFilter: text("notif_comments_filter").default("all"),
+  notifVotesFilter: text("notif_votes_filter").default("all"),
+  notifTopicsFilter: text("notif_topics_filter").default("all"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
 });
 

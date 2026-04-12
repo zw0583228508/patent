@@ -80,7 +80,7 @@ export const api = {
     getFollowing: (id: string) => request<ApiUser[]>(`/users/${id}/following`),
     savePushToken: (id: string, token: string) =>
       request<{ success: boolean }>(`/users/${id}/push-token`, { method: "POST", body: JSON.stringify({ token }) }),
-    saveNotifPrefs: (id: string, prefs: { notifComments?: boolean; notifLikes?: boolean; notifFollows?: boolean; notifVotes?: boolean }) =>
+    saveNotifPrefs: (id: string, prefs: { notifComments?: boolean; notifLikes?: boolean; notifFollows?: boolean; notifVotes?: boolean; notifCommentsFilter?: string; notifVotesFilter?: string; notifTopicsFilter?: string }) =>
       request<{ success: boolean }>(`/users/${id}/notif-prefs`, { method: "POST", body: JSON.stringify(prefs) }),
   },
 
