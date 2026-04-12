@@ -69,7 +69,7 @@ export const posts = pgTable(
 export const postLikes = pgTable(
   "post_likes",
   {
-    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull(),
     userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
@@ -79,7 +79,7 @@ export const postLikes = pgTable(
 export const postSaves = pgTable(
   "post_saves",
   {
-    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull(),
     userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
@@ -89,7 +89,7 @@ export const postSaves = pgTable(
 export const postVotes = pgTable(
   "post_votes",
   {
-    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull(),
     userId: text("user_id").notNull(),
     vote: integer("vote").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
@@ -101,7 +101,7 @@ export const comments = pgTable(
   "comments",
   {
     id: text("id").primaryKey(),
-    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull(),
     authorId: text("author_id").notNull().references(() => users.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
     likesCount: integer("likes_count").default(0),
@@ -113,7 +113,7 @@ export const comments = pgTable(
 export const postReposts = pgTable(
   "post_reposts",
   {
-    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull(),
     userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
@@ -154,7 +154,7 @@ export const collectionPosts = pgTable(
   "collection_posts",
   {
     collectionId: text("collection_id").notNull().references(() => collections.id, { onDelete: "cascade" }),
-    postId: text("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+    postId: text("post_id").notNull(),
     userId: text("user_id").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
   },
