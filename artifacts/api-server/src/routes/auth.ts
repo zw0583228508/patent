@@ -71,13 +71,15 @@ function closePopupPage(origin: string, token: string | null, error: string | nu
 
 router.get("/google", (req, res) => {
   const origin = String(req.query.origin ?? "");
+  const mobile = req.query.mobile === "1";
+  const scheme = mobile ? String(req.query.scheme ?? "patent-app") : "";
   const callbackOverride = req.query.callback ? String(req.query.callback) : null;
   const redirectUri = callbackOverride ?? buildCallbackUri(req);
   const oauth2 = makeOAuth2(redirectUri);
   const url = oauth2.generateAuthUrl({
     access_type: "offline",
     scope: ["email", "profile", "openid"],
-    state: Buffer.from(JSON.stringify({ origin, redirectUri })).toString("base64url"),
+    state: Buffer.from(JSON.stringify({ origin, redirectUri, mobile, scheme })).toString("base64url"),
     prompt: "select_account",
   });
   res.redirect(url);
@@ -89,12 +91,20 @@ router.get("/google/callback", async (req, res) => {
   const error = req.query.error as string | undefined;
 
   let origin = "";
+  let mobile = false;
+  let scheme = "patent-app";
   try {
     const decoded = Buffer.from(state ?? "", "base64url").toString();
-    origin = JSON.parse(decoded).origin ?? "";
+    const parsed = JSON.parse(decoded);
+    origin = parsed.origin ?? "";
+    mobile = parsed.mobile === true;
+    scheme = parsed.scheme ?? "patent-app";
   } catch {}
 
   if (error || !code) {
+    if (mobile) {
+      return res.redirect(`${scheme}://sso-callback?error=cancelled`);
+    }
     return res.send(closePopupPage(origin, null, "Google login was cancelled or failed."));
   }
 
@@ -108,15 +118,21 @@ router.get("/google/callback", async (req, res) => {
     const { data: gUser } = await oauth2Api.userinfo.get();
 
     if (!gUser.id || !gUser.email) {
+      if (mobile) return res.redirect(`${scheme}://sso-callback?error=no_user`);
       return res.send(closePopupPage(origin, null, "Could not get user info from Google."));
     }
 
     const name = gUser.name ?? gUser.email.split("@")[0];
     const user = await upsertGoogleUser(gUser.id, name, gUser.email);
     const token = signJwt(user.id, user.name, gUser.email, gUser.picture);
+
+    if (mobile) {
+      return res.redirect(`${scheme}://sso-callback?token=${encodeURIComponent(token)}`);
+    }
     res.send(closePopupPage(origin, token, null));
   } catch (err: any) {
     console.error("Google OAuth callback error:", err?.message ?? err);
+    if (mobile) return res.redirect(`${scheme}://sso-callback?error=auth_failed`);
     res.send(closePopupPage(origin, null, "Authentication failed. Please try again."));
   }
 });

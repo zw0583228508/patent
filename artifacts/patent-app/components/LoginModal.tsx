@@ -1,4 +1,3 @@
-import * as AuthSession from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -15,20 +14,10 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useSettings } from "@/context/SettingsContext";
 import { useColors } from "@/hooks/useColors";
-import { api } from "@/utils/api";
 
 WebBrowser.maybeCompleteAuthSession();
 
 const SSO_TIMEOUT_MS = 60_000;
-
-const GOOGLE_CLIENT_ID =
-  process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
-  "988409821514-vfgc07trnbssm2sild94jd7ppo6m49ct.apps.googleusercontent.com";
-
-const GOOGLE_DISCOVERY = {
-  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenEndpoint: "https://oauth2.googleapis.com/token",
-};
 
 function getApiBase(): string {
   const domain = process.env.EXPO_PUBLIC_DOMAIN;
@@ -51,20 +40,6 @@ export default function LoginModal() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const cancelRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const abortedRef = useRef(false);
-
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: "patent-app",
-    path: "auth/callback",
-  });
-
-  const [request, , promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId: GOOGLE_CLIENT_ID,
-      scopes: ["openid", "profile", "email"],
-      redirectUri,
-    },
-    GOOGLE_DISCOVERY
-  );
 
   function clearTimers() {
     if (timeoutRef.current) { clearTimeout(timeoutRef.current); timeoutRef.current = null; }
@@ -161,17 +136,25 @@ export default function LoginModal() {
     }, SSO_TIMEOUT_MS);
 
     try {
-      const result = await promptAsync();
+      const authUrl = `${getApiBase()}/auth/google?mobile=1&scheme=patent-app`;
+      const callbackScheme = "patent-app://sso-callback";
+      const result = await WebBrowser.openAuthSessionAsync(authUrl, callbackScheme);
 
       if (abortedRef.current) return;
 
-      if (result.type === "success" && result.params.access_token) {
-        const data = await api.auth.exchangeToken(result.params.access_token);
-        await login(data.token);
-        resetLoading();
-        setShowLoginModal(false);
-      } else if (result.type === "success" && result.params.code) {
-        resetLoading("ניסיון נוסף הכרחי — הגדר מחדש את URI.");
+      if (result.type === "success" && result.url) {
+        const urlObj = new URL(result.url);
+        const token = urlObj.searchParams.get("token");
+        const err = urlObj.searchParams.get("error");
+        if (token) {
+          await login(token);
+          resetLoading();
+          setShowLoginModal(false);
+        } else if (err === "cancelled") {
+          resetLoading();
+        } else {
+          resetLoading("ההתחברות נכשלה. נסה שוב.");
+        }
       } else if (result.type === "cancel" || result.type === "dismiss") {
         resetLoading();
       } else {
