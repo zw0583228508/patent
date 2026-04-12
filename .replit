@@ -45,3 +45,6 @@ GOOGLE_CLIENT_ID = "988409821514-vfgc07trnbssm2sild94jd7ppo6m49ct.apps.googleuse
 GOOGLE_CLIENT_SECRET = "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"
 EXPO_PUBLIC_GOOGLE_CLIENT_ID = "988409821514-vfgc07trnbssm2sild94jd7ppo6m49ct.apps.googleusercontent.com"
 EXPO_PUBLIC_DOMAIN = "6131e546-48f6-4c32-8f59-751aac1e627f-00-j16djgsgi0ml.kirk.replit.dev"
+
+[objectStorage]
+defaultBucketID = "replit-objstore-c6463d2e-eede-443e-bedb-1dd2b2b272c3"
