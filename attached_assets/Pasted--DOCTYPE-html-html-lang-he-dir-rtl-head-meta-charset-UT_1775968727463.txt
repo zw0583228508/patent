@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patent — תכנון מלא</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Noto+Sans+Hebrew:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #13131a;
+    --surface2: #1c1c27;
+    --accent: #f0e040;
+    --accent2: #40e0f0;
+    --accent3: #f040a0;
+    --text: #f0f0f8;
+    --muted: #7070a0;
+    --border: #2a2a3a;
+    --radius: 16px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans Hebrew', sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 60px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 30%, rgba(240,224,64,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 70%, rgba(64,224,240,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 50% 100%, rgba(240,64,160,0.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    background: rgba(240,224,64,0.12);
+    border: 1px solid rgba(240,224,64,0.3);
+    color: var(--accent);
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    padding: 6px 18px;
+    border-radius: 100px;
+    margin-bottom: 32px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .hero h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(64px, 14vw, 140px);
+    font-weight: 800;
+    letter-spacing: -4px;
+    line-height: 0.9;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #f0f0f8 0%, #f0e040 50%, #40e0f0 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 20px;
+    color: var(--muted);
+    max-width: 500px;
+    margin-bottom: 48px;
+    font-weight: 300;
+  }
+
+  .hero-badges {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .badge {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 8px 20px;
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  /* ── SECTION ── */
+  .section {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 80px 24px;
+  }
+
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(28px, 5vw, 48px);
+    font-weight: 700;
+    margin-bottom: 48px;
+    line-height: 1.15;
+  }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 0 24px;
+  }
+
+  /* ── CONCEPT CARDS ── */
+  .concept-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 60px;
+  }
+
+  .concept-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+  }
+
+  .concept-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-gradient, linear-gradient(90deg, var(--accent), var(--accent2)));
+  }
+
+  .concept-card:hover { border-color: rgba(240,224,64,0.3); }
+
+  .card-icon {
+    font-size: 32px;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  .card-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--text);
+  }
+
+  .card-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── PHONE MOCKUP ── */
+  .mockup-section {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: 80px 24px;
+  }
+
+  .mockup-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 60px;
+    align-items: start;
+  }
+
+  @media (max-width: 768px) {
+    .mockup-inner { grid-template-columns: 1fr; }
+  }
+
+  .phone {
+    width: 320px;
+    margin: 0 auto;
+    background: #0d0d14;
+    border-radius: 44px;
+    border: 2px solid #2a2a3a;
+    padding: 16px;
+    box-shadow:
+      0 0 0 1px #1a1a28,
+      0 40px 80px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.05);
+    position: relative;
+  }
+
+  .phone-notch {
+    width: 100px;
+    height: 28px;
+    background: #0d0d14;
+    border-radius: 0 0 20px 20px;
+    margin: 0 auto 12px;
+    border: 2px solid #2a2a3a;
+    border-top: none;
+  }
+
+  .phone-screen {
+    background: #0a0a0f;
+    border-radius: 32px;
+    overflow: hidden;
+    min-height: 580px;
+  }
+
+  /* App UI inside phone */
+  .app-bar {
+    background: rgba(10,10,15,0.95);
+    padding: 16px 18px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1c1c27;
+    position: sticky;
+    top: 0;
+    backdrop-filter: blur(10px);
+  }
+
+  .app-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f0e040, #40e0f0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .app-icons {
+    display: flex;
+    gap: 14px;
+    font-size: 16px;
+  }
+
+  .feed-tabs {
+    display: flex;
+    padding: 10px 18px;
+    gap: 6px;
+    border-bottom: 1px solid #1c1c27;
+  }
+
+  .feed-tab {
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 11px;
+    font-family: 'Noto Sans Hebrew', sans-serif;
+    cursor: pointer;
+    border: 1px solid transparent;
+  }
+
+  .feed-tab.active {
+    background: rgba(240,224,64,0.15);
+    border-color: rgba(240,224,64,0.4);
+    color: #f0e040;
+  }
+
+  .feed-tab:not(.active) {
+    color: #7070a0;
+    border-color: #2a2a3a;
+  }
+
+  .tip-card-app {
+    margin: 12px;
+    background: #13131a;
+    border: 1px solid #2a2a3a;
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .tip-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f0e040, #40e0f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #0a0a0f;
+    flex-shrink: 0;
+  }
+
+  .tip-meta {
+    flex: 1;
+  }
+
+  .tip-username {
+    font-size: 11px;
+    font-weight: 600;
+    color: #d0d0e0;
+  }
+
+  .tip-cat {
+    font-size: 9px;
+    color: #7070a0;
+  }
+
+  .tip-badge {
+    font-size: 9px;
+    background: rgba(240,224,64,0.15);
+    color: #f0e040;
+    border: 1px solid rgba(240,224,64,0.3);
+    border-radius: 100px;
+    padding: 2px 7px;
+  }
+
+  .tip-text {
+    font-size: 12px;
+    color: #c0c0d8;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .tip-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .btn-worked {
+    flex: 1;
+    background: rgba(64,224,64,0.12);
+    border: 1px solid rgba(64,224,64,0.3);
+    color: #40e040;
+    border-radius: 8px;
+    padding: 5px;
+    font-size: 10px;
+    text-align: center;
+    font-family: 'Noto Sans Hebrew', sans-serif;
+  }
+
+  .btn-not {
+    flex: 1;
+    background: rgba(240,64,64,0.1);
+    border: 1px solid rgba(240,64,64,0.25);
+    color: #f04040;
+    border-radius: 8px;
+    padding: 5px;
+    font-size: 10px;
+    text-align: center;
+    font-family: 'Noto Sans Hebrew', sans-serif;
+  }
+
+  .tip-score {
+    font-size: 10px;
+    color: #7070a0;
+    text-align: left;
+    direction: ltr;
+  }
+
+  /* question card */
+  .q-card {
+    margin: 0 12px 10px;
+    background: #13131a;
+    border: 1px solid rgba(64,224,240,0.2);
+    border-radius: 14px;
+    padding: 14px;
+  }
+
+  .q-label {
+    font-size: 9px;
+    color: #40e0f0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .q-text {
+    font-size: 12px;
+    color: #c0c0d8;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .q-answer-btn {
+    background: rgba(64,224,240,0.1);
+    border: 1px solid rgba(64,224,240,0.3);
+    color: #40e0f0;
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 10px;
+    font-family: 'Noto Sans Hebrew', sans-serif;
+  }
+
+  .app-nav {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 18px 14px;
+    border-top: 1px solid #1c1c27;
+    background: #0d0d14;
+  }
+
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 9px;
+    color: #7070a0;
+  }
+
+  .nav-item.active { color: #f0e040; }
+  .nav-icon { font-size: 18px; }
+
+  .fab {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #f0e040, #40e0f0);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    color: #0a0a0f;
+    font-weight: 700;
+    margin-top: -6px;
+  }
+
+  /* ── DESIGN SPEC ── */
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 20px;
+  }
+
+  .spec-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+
+  .spec-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'Syne', sans-serif;
+  }
+
+  .color-swatches {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .swatch-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+  }
+
+  .swatch-name {
+    font-size: 9px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .font-sample {
+    margin-bottom: 12px;
+  }
+
+  .font-name {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .font-display {
+    font-family: 'Syne', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .font-display-he {
+    font-family: 'Noto Sans Hebrew', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* ── FEATURES ── */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+  }
+
+  .feature {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+
+  .feature-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 48px;
+    font-weight: 800;
+    color: var(--accent);
+    opacity: 0.25;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .feature-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .feature-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── FLOW ── */
+  .flow {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 16px;
+  }
+
+  .flow-step {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px;
+    min-width: 200px;
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .flow-step:not(:last-child)::after {
+    content: '←';
+    position: absolute;
+    left: -18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--accent);
+    font-size: 18px;
+  }
+
+  .flow-step:not(:first-child) {
+    margin-right: 28px;
+  }
+
+  .flow-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+
+  .flow-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .flow-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ── ROADMAP ── */
+  .roadmap {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 700px) {
+    .roadmap { grid-template-columns: 1fr; }
+  }
+
+  .phase {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+  }
+
+  .phase-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .phase-1 .phase-label { color: #40e040; }
+  .phase-2 .phase-label { color: var(--accent); }
+  .phase-3 .phase-label { color: var(--accent2); }
+
+  .phase-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .phase ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .phase li {
+    font-size: 13px;
+    color: var(--muted);
+    padding-right: 16px;
+    position: relative;
+  }
+
+  .phase li::before {
+    content: '▸';
+    position: absolute;
+    right: 0;
+    color: var(--border);
+  }
+
+  /* ── MONETIZATION ── */
+  .money-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+  }
+
+  .money-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    text-align: center;
+  }
+
+  .money-icon { font-size: 40px; margin-bottom: 12px; }
+
+  .money-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .money-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .money-est {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    text-align: center;
+    padding: 60px 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 64px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #f0e040, #40e0f0, #f040a0);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+
+  .footer-sub {
+    font-size: 14px;
+    color: var(--muted);
+  }
+</style>
+</head>
+<body>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">תכנון מוצר מלא · 2025</div>
+  <h1>Patent</h1>
+  <p class="hero-sub">הרשת החברתית של הידע היומיומי — שתף, שאל, אמת.</p>
+  <div class="hero-badges">
+    <span class="badge">📱 Mobile First</span>
+    <span class="badge">🌍 גלובלי</span>
+    <span class="badge">🤖 AI-Powered</span>
+    <span class="badge">✅ אימות קולקטיבי</span>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- CONCEPT -->
+<section class="section">
+  <div class="section-label">הקונספט</div>
+  <h2 class="section-title">שני סוגי משתמשים.<br>מעגל אחד מושלם.</h2>
+  <div class="concept-grid">
+    <div class="concept-card" style="--accent-gradient: linear-gradient(90deg, #f0e040, #f0a040)">
+      <span class="card-icon">💡</span>
+      <div class="card-title">נותן טיפ</div>
+      <div class="card-desc">מעלה טיפ קצר שגילה — בטקסט, תמונה, או וידאו קצר. הקהל מאמת אם זה עובד באמת. ככל שהטיפ עוזר לאנשים — כך עולה הדירוג שלך.</div>
+    </div>
+    <div class="concept-card" style="--accent-gradient: linear-gradient(90deg, #40e0f0, #4080f0)">
+      <span class="card-icon">❓</span>
+      <div class="card-title">מבקש פתרון</div>
+      <div class="card-desc">מעלה בעיה שאין לו עליה תשובה. הקהל עונה. התשובות הכי טובות עולות למעלה ונהפכות לטיפים רשמיים בפלטפורמה — עם קרדיט למי שענה.</div>
+    </div>
+    <div class="concept-card" style="--accent-gradient: linear-gradient(90deg, #f040a0, #a040f0)">
+      <span class="card-icon">✅</span>
+      <div class="card-title">מאמת קהל</div>
+      <div class="card-desc">כל טיפ מקבל הצבעות "עבד לי / לא עבד לי". זה הופך את Patent מרשת של דעות — לרשת של עובדות שנבדקו על ידי אנשים אמיתיים.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PHONE MOCKUP -->
+<section class="mockup-section">
+  <div class="mockup-inner">
+    <div>
+      <div class="section-label">עיצוב האפליקציה</div>
+      <h2 class="section-title" style="margin-bottom:24px">כך זה נראה<br>בפועל.</h2>
+      <p style="color:var(--muted);font-size:15px;line-height:1.8;margin-bottom:24px">הממשק בנוי סביב פיד אנכי נקי. כל כרטיס הוא עולם קטן — טיפ, אימות, וקטגוריה. הניווט תחתי, FAB מרכזי לפרסום חדש.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;background:rgba(240,224,64,0.15);border:1px solid rgba(240,224,64,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💡</div>
+          <div style="font-size:14px;color:var(--muted)">כרטיסי טיפ עם ציון אמינות חי</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;background:rgba(64,224,240,0.12);border:1px solid rgba(64,224,240,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">❓</div>
+          <div style="font-size:14px;color:var(--muted)">כרטיסי שאלה בצבע שונה לאבחנה מהירה</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:36px;height:36px;background:rgba(240,64,160,0.12);border:1px solid rgba(240,64,160,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🔥</div>
+          <div style="font-size:14px;color:var(--muted)">טרנדינג יומי — הטיפ הכי מאומת ב-24 שעות</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Phone -->
+    <div class="phone">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="app-bar">
+          <span class="app-logo">Patent</span>
+          <div class="app-icons">🔔 🔍</div>
+        </div>
+        <div class="feed-tabs">
+          <div class="feed-tab active">הכל</div>
+          <div class="feed-tab">בית</div>
+          <div class="feed-tab">אוכל</div>
+          <div class="feed-tab">עסקים</div>
+        </div>
+
+        <!-- Tip Card 1 -->
+        <div class="tip-card-app">
+          <div class="tip-header">
+            <div class="avatar">מל</div>
+            <div class="tip-meta">
+              <div class="tip-username">מלי כהן</div>
+              <div class="tip-cat">🏠 בית</div>
+            </div>
+            <div class="tip-badge">✅ 94%</div>
+          </div>
+          <div class="tip-text">שים גרעין אבוקדו במים עם האבוקדו החתוך — לא ישחיר גם 3 שעות אחרי.</div>
+          <div class="tip-actions">
+            <div class="btn-worked">✅ עבד לי (2.4k)</div>
+            <div class="btn-not">❌ לא עבד (142)</div>
+            <div class="tip-score">💬 38</div>
+          </div>
+        </div>
+
+        <!-- Question Card -->
+        <div class="q-card">
+          <div class="q-label">❓ מחפש פתרון</div>
+          <div class="tip-header">
+            <div class="avatar" style="background:linear-gradient(135deg,#40e0f0,#4080f0)">דן</div>
+            <div class="tip-meta">
+              <div class="tip-username">דן לוי</div>
+              <div class="tip-cat">🍕 אוכל</div>
+            </div>
+          </div>
+          <div class="q-text">איך שומרים על תות שדה טרי יותר מיום אחד בלי שיתעפש?</div>
+          <div class="q-answer-btn">ענה · 47 תשובות</div>
+        </div>
+
+        <!-- Tip Card 2 -->
+        <div class="tip-card-app">
+          <div class="tip-header">
+            <div class="avatar" style="background:linear-gradient(135deg,#f040a0,#a040f0)">רון</div>
+            <div class="tip-meta">
+              <div class="tip-username">רון אבי</div>
+              <div class="tip-cat">💼 עסקים</div>
+            </div>
+            <div class="tip-badge">🔥 טרנד</div>
+          </div>
+          <div class="tip-text">שלח הצעת מחיר תמיד ב-PDF ולא ב-Word. נראה יותר מקצועי ולא ניתן לעריכה.</div>
+          <div class="tip-actions">
+            <div class="btn-worked">✅ עבד לי (5.1k)</div>
+            <div class="btn-not">❌ לא עבד (89)</div>
+            <div class="tip-score">💬 122</div>
+          </div>
+        </div>
+
+        <div class="app-nav">
+          <div class="nav-item active">
+            <div class="nav-icon">🏠</div>
+            <div>בית</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">🔥</div>
+            <div>טרנד</div>
+          </div>
+          <div class="nav-item">
+            <div class="fab">+</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">🔍</div>
+            <div>חיפוש</div>
+          </div>
+          <div class="nav-item">
+            <div class="nav-icon">👤</div>
+            <div>פרופיל</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- DESIGN SPEC -->
+<section class="section">
+  <div class="section-label">מדריך עיצוב</div>
+  <h2 class="section-title">שפה ויזואלית.</h2>
+  <div class="spec-grid">
+
+    <div class="spec-card">
+      <div class="spec-label">צבעים</div>
+      <div class="color-swatches">
+        <div class="swatch">
+          <div class="swatch-circle" style="background:#0a0a0f;border-color:#2a2a3a"></div>
+          <div class="swatch-name">רקע<br>#0a0a0f</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-circle" style="background:#13131a"></div>
+          <div class="swatch-name">Surface<br>#13131a</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-circle" style="background:#f0e040"></div>
+          <div class="swatch-name">Accent<br>#f0e040</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-circle" style="background:#40e0f0"></div>
+          <div class="swatch-name">Info<br>#40e0f0</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-circle" style="background:#40e040"></div>
+          <div class="swatch-name">אמת<br>#40e040</div>
+        </div>
+        <div class="swatch">
+          <div class="swatch-circle" style="background:#f04040"></div>
+          <div class="swatch-name">שגוי<br>#f04040</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-label">טיפוגרפיה</div>
+      <div class="font-sample">
+        <div class="font-name">Syne — כותרות</div>
+        <div class="font-display">Patent</div>
+      </div>
+      <div class="font-sample">
+        <div class="font-name">Noto Sans Hebrew — גוף</div>
+        <div class="font-display-he">טיפ שגילית שווה זהב</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:12px">כותרות: 800 bold · גוף: 400/600 · מינימום: 12px</div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-label">עקרונות עיצוב</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:13px;color:var(--muted)">🌑 <strong style="color:var(--text)">Dark Mode בלבד</strong> — נוח לעיניים, מחזיר סוללה</div>
+        <div style="font-size:13px;color:var(--muted)">📐 <strong style="color:var(--text)">Border Radius 14-16px</strong> — עגול ונגיש</div>
+        <div style="font-size:13px;color:var(--muted)">⚡ <strong style="color:var(--text)">Micro-animations</strong> — כפתורי הצבעה עם haptic</div>
+        <div style="font-size:13px;color:var(--muted)">🎯 <strong style="color:var(--text)">Accent צהוב</strong> — אחד בלבד, כל השאר מינורי</div>
+        <div style="font-size:13px;color:var(--muted)">📊 <strong style="color:var(--text)">Progress bars</strong> — אחוז אמינות בכל טיפ</div>
+      </div>
+    </div>
+
+    <div class="spec-card">
+      <div class="spec-label">אייקונים ואמוג'י</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">כל קטגוריה מיוצגת באמוג'י — פשוט, אינטואיטיבי, אוניברסלי.</div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px">
+        <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">🏠 בית</span>
+        <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">🍕 אוכל</span>
+        <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">💼 עסקים</span>
+        <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">💊 בריאות</span>
+        <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">💻 טכנולוגיה</span>
+        <span style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px">🌿 טבע</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-label">פיצ'רים מרכזיים</div>
+  <h2 class="section-title">מה בפנים.</h2>
+  <div class="features-grid">
+    <div class="feature">
+      <div class="feature-num">01</div>
+      <div class="feature-title">אימות קולקטיבי חכם</div>
+      <div class="feature-desc">כל טיפ מציג בזמן אמת כמה אנשים ניסו אותו ובאיזה אחוז הצליח. זה לא דעה — זה נתון.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-num">02</div>
+      <div class="feature-title">בקשת פתרון עם תגמול</div>
+      <div class="feature-desc">מי שמעלה שאלה יכול להגדיר "תגמול" — נקודות, תג, או עתידית כסף. מי שעונה הכי טוב — מרוויח.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-num">03</div>
+      <div class="feature-title">פרופיל מומחה</div>
+      <div class="feature-desc">כל משתמש בונה ציון אמינות לפי הטיפים שלו. ככל שהטיפים שלך עוזרים לאנשים — כך אתה עולה ל"מומחה מאומת".</div>
+    </div>
+    <div class="feature">
+      <div class="feature-num">04</div>
+      <div class="feature-title">AI סינון איכות</div>
+      <div class="feature-desc">מודל AI מסנן טיפים שגויים, מסוכנים, או כפולים — לפני שהם עולים לפיד הראשי.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-num">05</div>
+      <div class="feature-title">טרנד יומי</div>
+      <div class="feature-desc">כל יום — הטיפ הכי מאומת ב-24 שעות האחרונות. Push notification שאנשים באמת רוצים לפתוח.</div>
+    </div>
+    <div class="feature">
+      <div class="feature-num">06</div>
+      <div class="feature-title">שמירה וקולקציות</div>
+      <div class="feature-desc">שמור טיפים לפי נושא — "טיפי מטבח", "טיפי עסקים", "טיפי חיסכון". הפלטפורמה שלך של ידע אישי.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- USER FLOW -->
+<section class="section">
+  <div class="section-label">User Flow</div>
+  <h2 class="section-title">איך משתמש חדש<br>הופך לקבוע.</h2>
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-num">STEP 01</div>
+      <div class="flow-title">הורדה</div>
+      <div class="flow-desc">מגיע מוויראל — חבר שלח טיפ שעבד</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 02</div>
+      <div class="flow-title">הרשמה</div>
+      <div class="flow-desc">בחירת 3 קטגוריות עניין. 30 שניות.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 03</div>
+      <div class="flow-title">גילוי</div>
+      <div class="flow-desc">פיד מותאם אישית. גלילה ראשונה — כבר מוצא טיפ שימושי.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 04</div>
+      <div class="flow-title">השתתפות</div>
+      <div class="flow-desc">מצביע "עבד לי" על טיפ. מרגיש חלק מהקהילה.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 05</div>
+      <div class="flow-title">תרומה</div>
+      <div class="flow-desc">מעלה טיפ משלו. מקבל תגובות. מתחיל לחזור.</div>
+    </div>
+    <div class="flow-step">
+      <div class="flow-num">STEP 06</div>
+      <div class="flow-title">שגרה</div>
+      <div class="flow-desc">פותח כל בוקר לראות מה הטיפ של היום.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- ROADMAP -->
+<section class="section">
+  <div class="section-label">רודמאפ</div>
+  <h2 class="section-title">שלושה שלבים<br>לשוק העולמי.</h2>
+  <div class="roadmap">
+    <div class="phase phase-1">
+      <div class="phase-label">שלב א · חודשים 1–3</div>
+      <div class="phase-title">MVP</div>
+      <ul>
+        <li>פרופיל משתמש</li>
+        <li>העלאת טיפ (טקסט + תמונה)</li>
+        <li>הצבעה עבד / לא עבד</li>
+        <li>פיד לפי פופולריות</li>
+        <li>קטגוריות בסיסיות</li>
+        <li>שיתוף לוואטסאפ</li>
+      </ul>
+    </div>
+    <div class="phase phase-2">
+      <div class="phase-label">שלב ב · חודשים 4–8</div>
+      <div class="phase-title">צמיחה</div>
+      <ul>
+        <li>בקשת פתרון + תגמול</li>
+        <li>פרופיל מומחה + ציון</li>
+        <li>Push notification יומי</li>
+        <li>וידאו קצר</li>
+        <li>חיפוש מתקדם</li>
+        <li>אפליקציית Web</li>
+      </ul>
+    </div>
+    <div class="phase phase-3">
+      <div class="phase-label">שלב ג · חודשים 9–18</div>
+      <div class="phase-title">מונטיזציה</div>
+      <ul>
+        <li>מינוי פרימיום</li>
+        <li>ספונסרים ומותגים</li>
+        <li>AI סינון מתקדם</li>
+        <li>שפות נוספות</li>
+        <li>API לעסקים</li>
+        <li>מרקטפלייס טיפים</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- MONETIZATION -->
+<section class="section">
+  <div class="section-label">מודל עסקי</div>
+  <h2 class="section-title">איך עושים כסף.</h2>
+  <div class="money-grid">
+    <div class="money-card">
+      <div class="money-icon">👑</div>
+      <div class="money-title">Patent Pro</div>
+      <div class="money-desc">ללא פרסומות, טיפים בלעדיים ממומחים, סטטיסטיקות מתקדמות על הטיפים שלך.</div>
+      <div class="money-est">₪29/חודש · חזוי: 5% מהמשתמשים</div>
+    </div>
+    <div class="money-card">
+      <div class="money-icon">🏷️</div>
+      <div class="money-title">ספונסר קטגוריה</div>
+      <div class="money-desc">מותג משלם להיות "ספונסר הקטגוריה" — למשל סופרמקס ספונסר קטגוריית אוכל.</div>
+      <div class="money-est">₪5,000–50,000/חודש למותג</div>
+    </div>
+    <div class="money-card">
+      <div class="money-icon">🎯</div>
+      <div class="money-title">טיפים ממומנים</div>
+      <div class="money-desc">מותגים מעלים טיפ ממומן — מסומן בבירור, אבל עובר אימות קהל כמו כולם.</div>
+      <div class="money-est">₪500–5,000 לטיפ ממומן</div>
+    </div>
+    <div class="money-card">
+      <div class="money-icon">🔌</div>
+      <div class="money-title">API לעסקים</div>
+      <div class="money-desc">חברות משלמות לגשת לדאטה של הטיפים המאומתים — לשיפור מוצרים ושירות לקוחות.</div>
+      <div class="money-est">SaaS · ₪2,000+/חודש</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<div class="divider"></div>
+<footer class="footer">
+  <div class="footer-logo">Patent</div>
+  <div class="footer-sub">הרשת החברתית של הידע היומיומי · תכנון מוצר מלא · 2025</div>
+</footer>
+
+</body>
+</html>
