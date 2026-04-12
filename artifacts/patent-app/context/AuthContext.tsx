@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { api, setAuthToken } from "@/utils/api";
+import { api, setAuthToken, setOnUnauthorized } from "@/utils/api";
 
 const TOKEN_KEY = "@patent:auth_token";
 
@@ -77,17 +77,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pendingAction = useRef<(() => void) | null>(null);
   const prevLoggedIn = useRef<boolean>(false);
 
+  const isInitializing = useRef(true);
+
   useEffect(() => {
-    AsyncStorage.getItem(TOKEN_KEY).then((token) => {
+    setOnUnauthorized(() => {
+      AsyncStorage.removeItem(TOKEN_KEY).catch(() => {});
+      setAuthToken(null);
+      setUser(null);
+      if (!isInitializing.current) {
+        setShowLoginModal(true);
+      }
+    });
+
+    AsyncStorage.getItem(TOKEN_KEY).then(async (token) => {
       if (token) {
         const parsed = tokenToUser(token);
         if (parsed) {
           setAuthToken(token);
-          setUser(parsed);
+          try {
+            await api.auth.me();
+            setUser(parsed);
+          } catch {
+            setAuthToken(null);
+            await AsyncStorage.removeItem(TOKEN_KEY);
+          }
         } else {
-          AsyncStorage.removeItem(TOKEN_KEY);
+          await AsyncStorage.removeItem(TOKEN_KEY);
         }
       }
+      isInitializing.current = false;
       setIsLoading(false);
     });
   }, []);

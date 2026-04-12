@@ -96,6 +96,10 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
     }
   }, [visible, user]);
 
+  function isAuthError(e: unknown): boolean {
+    return e instanceof Error && (e.message.includes("Authentication") || e.message.includes("Invalid or expired"));
+  }
+
   async function loadCollections() {
     setLoading(true);
     try {
@@ -105,7 +109,8 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
       ]);
       setCollections(cols);
       setSavedInIds(new Set(check.collectionIds));
-    } catch {
+    } catch (e) {
+      if (isAuthError(e)) onClose();
     } finally {
       setLoading(false);
     }
@@ -128,8 +133,8 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
         setCollections((c) => c.map((x) => x.id === col.id ? { ...x, postsCount: x.postsCount + 1 } : x));
         showToast(t("addedToCollection"), "success", "bookmark");
       }
-    } catch {
-      showToast("שגיאה", "error", "alert-circle");
+    } catch (e) {
+      if (!isAuthError(e)) showToast(t("errorGeneric") || "שגיאה", "error", "alert-circle");
     } finally {
       setToggling(null);
     }
@@ -144,8 +149,8 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
       setShowCreate(false);
       setNewName("");
       showToast(t("collectionCreated"), "success", "folder");
-    } catch {
-      showToast("שגיאה ביצירת אוסף", "error", "alert-circle");
+    } catch (e) {
+      if (!isAuthError(e)) showToast(t("errorCreateCollection") || "שגיאה ביצירת אוסף", "error", "alert-circle");
     } finally {
       setCreating(false);
     }

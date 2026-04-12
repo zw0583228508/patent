@@ -12,6 +12,7 @@ function getBaseUrl() {
 const BASE_URL = getBaseUrl();
 
 let _authToken: string | null = null;
+let _onUnauthorized: (() => void) | null = null;
 
 export function setAuthToken(token: string | null) {
   _authToken = token;
@@ -19,6 +20,10 @@ export function setAuthToken(token: string | null) {
 
 export function getAuthToken(): string | null {
   return _authToken;
+}
+
+export function setOnUnauthorized(fn: () => void) {
+  _onUnauthorized = fn;
 }
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
@@ -33,6 +38,12 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
     headers,
   });
+
+  if (response.status === 401) {
+    _onUnauthorized?.();
+    const err = await response.json().catch(() => ({ error: "Authentication required" }));
+    throw new Error(err.error ?? "Authentication required");
+  }
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({ error: response.statusText }));
