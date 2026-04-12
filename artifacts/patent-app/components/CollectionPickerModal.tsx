@@ -181,6 +181,7 @@ export default function CollectionPickerModal({ visible, postId, onClose }: Prop
             transform: [{ translateY: sheetTranslateY }],
           },
         ]}
+        onStartShouldSetResponder={() => true}
       >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
