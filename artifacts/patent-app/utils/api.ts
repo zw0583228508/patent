@@ -64,16 +64,16 @@ export const api = {
       return request<{ data: ApiPost[]; total: number; hasMore: boolean }>(`/posts?${query}`);
     },
     get: (id: string) => request<{ post: ApiPost; author: ApiUserPublic }>(`/posts/${id}`),
-    create: (body: CreatePostBody) =>
+    create: (body: Omit<CreatePostBody, "authorId">) =>
       request<ApiPost>("/posts", { method: "POST", body: JSON.stringify(body) }),
-    delete: (id: string, userId: string) =>
-      request<{ success: boolean }>(`/posts/${id}`, { method: "DELETE", body: JSON.stringify({ userId }) }),
-    like: (id: string, userId: string) =>
-      request<{ liked: boolean }>(`/posts/${id}/like`, { method: "POST", body: JSON.stringify({ userId }) }),
-    save: (id: string, userId: string) =>
-      request<{ saved: boolean }>(`/posts/${id}/save`, { method: "POST", body: JSON.stringify({ userId }) }),
-    vote: (id: string, userId: string, vote: 1 | -1) =>
-      request<{ vote: number }>(`/posts/${id}/vote`, { method: "POST", body: JSON.stringify({ userId, vote }) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/posts/${id}`, { method: "DELETE", body: "{}" }),
+    like: (id: string) =>
+      request<{ liked: boolean }>(`/posts/${id}/like`, { method: "POST", body: "{}" }),
+    save: (id: string) =>
+      request<{ saved: boolean }>(`/posts/${id}/save`, { method: "POST", body: "{}" }),
+    vote: (id: string, vote: 1 | -1) =>
+      request<{ vote: number }>(`/posts/${id}/vote`, { method: "POST", body: JSON.stringify({ vote }) }),
     share: (id: string) =>
       request<{ success: boolean }>(`/posts/${id}/share`, { method: "POST", body: "{}" }),
   },
@@ -151,10 +151,10 @@ export const api = {
       if (params?.offset != null) query.set("offset", String(params.offset));
       return request<ApiComment[]>(`/comments/post/${postId}?${query}`);
     },
-    create: (body: CreateCommentBody) =>
+    create: (body: Omit<CreateCommentBody, "authorId">) =>
       request<ApiComment>("/comments", { method: "POST", body: JSON.stringify(body) }),
-    delete: (id: string, userId: string) =>
-      request<{ success: boolean }>(`/comments/${id}`, { method: "DELETE", body: JSON.stringify({ userId }) }),
+    delete: (id: string) =>
+      request<{ success: boolean }>(`/comments/${id}`, { method: "DELETE", body: "{}" }),
   },
 };
 

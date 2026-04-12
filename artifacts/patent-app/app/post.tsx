@@ -85,7 +85,6 @@ export default function PostScreen() {
       }
       api.posts.create({
         id: localPost.id,
-        authorId: user.id,
         type: postType,
         title: text.trim().slice(0, 120),
         content: text.trim(),

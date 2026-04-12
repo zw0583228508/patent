@@ -86,7 +86,6 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
       api.comments.create({
         id: "cmt_" + Date.now() + Math.random().toString(36).slice(2, 7),
         postId: itemId,
-        authorId: user.id,
         content: commentText,
       }).catch(() => {});
     }
@@ -153,6 +152,7 @@ export default function CommentsSheet({ visible, itemId, itemText, isQuestion, o
           styles.sheet,
           { backgroundColor: colors.surface, borderTopColor: colors.border, height: sheetHeight, transform: [{ translateY }] },
         ]}
+        onStartShouldSetResponder={() => true}
       >
         <View style={[styles.handle, { backgroundColor: colors.border }]} />
 
