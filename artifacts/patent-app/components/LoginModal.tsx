@@ -21,7 +21,9 @@ WebBrowser.maybeCompleteAuthSession();
 
 const SSO_TIMEOUT_MS = 60_000;
 
-const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ?? "";
+const GOOGLE_CLIENT_ID =
+  process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID ||
+  "988409821514-vfgc07trnbssm2sild94jd7ppo6m49ct.apps.googleusercontent.com";
 
 const GOOGLE_DISCOVERY = {
   authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
