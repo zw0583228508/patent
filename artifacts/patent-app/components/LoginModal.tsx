@@ -19,7 +19,7 @@ import { useColors } from "@/hooks/useColors";
 
 WebBrowser.maybeCompleteAuthSession();
 
-type LoadingProvider = "google" | "facebook" | null;
+type LoadingProvider = "google" | null;
 
 export default function LoginModal() {
   const colors = useColors();
@@ -50,26 +50,6 @@ export default function LoginModal() {
     } catch (err: any) {
       console.error("Google SSO error:", err);
       setError("שגיאה בהתחברות עם Google. נסה שוב.");
-    }
-    setLoading(null);
-  }
-
-  async function handleFacebook() {
-    setLoading("facebook");
-    setError(null);
-    try {
-      const { createdSessionId, setActive } = await startSSOFlow({
-        strategy: "oauth_facebook",
-        redirectUrl: AuthSession.makeRedirectUri(),
-      });
-
-      if (createdSessionId) {
-        await setActive!({ session: createdSessionId });
-        setShowLoginModal(false);
-      }
-    } catch (err: any) {
-      console.error("Facebook SSO error:", err);
-      setError("שגיאה בהתחברות עם Facebook. נסה שוב.");
     }
     setLoading(null);
   }
@@ -125,25 +105,6 @@ export default function LoginModal() {
                   <Text style={styles.googleG}>G</Text>
                 </View>
                 <Text style={styles.googleBtnText}>{t("signInWithGoogle")}</Text>
-              </>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.providerBtn, styles.facebookBtn]}
-            onPress={handleFacebook}
-            disabled={loading !== null}
-            testID="sign-in-facebook"
-            activeOpacity={0.88}
-          >
-            {loading === "facebook" ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <>
-                <View style={styles.fbIcon}>
-                  <Text style={styles.fbF}>f</Text>
-                </View>
-                <Text style={styles.facebookBtnText}>{t("signInWithFacebook")}</Text>
               </>
             )}
           </TouchableOpacity>
@@ -262,27 +223,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600" as const,
     color: "#1a1a1a",
-  },
-  facebookBtn: {
-    backgroundColor: "#1877F2",
-  },
-  fbIcon: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "rgba(255,255,255,0.2)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  fbF: {
-    fontSize: 15,
-    fontWeight: "800" as const,
-    color: "#ffffff",
-  },
-  facebookBtnText: {
-    fontSize: 15,
-    fontWeight: "600" as const,
-    color: "#ffffff",
   },
   divider: {
     borderTopWidth: StyleSheet.hairlineWidth,
