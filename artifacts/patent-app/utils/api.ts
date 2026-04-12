@@ -82,6 +82,8 @@ export const api = {
       request<{ success: boolean }>(`/users/${id}/push-token`, { method: "POST", body: JSON.stringify({ token }) }),
     saveNotifPrefs: (id: string, prefs: { notifComments?: boolean; notifLikes?: boolean; notifFollows?: boolean; notifVotes?: boolean; notifCommentsFilter?: string; notifVotesFilter?: string; notifTopicsFilter?: string }) =>
       request<{ success: boolean }>(`/users/${id}/notif-prefs`, { method: "POST", body: JSON.stringify(prefs) }),
+    getSuggestions: (id: string, limit = 12) =>
+      request<(ApiUser & { mutualFollowers: number })[]>(`/users/${id}/suggestions?limit=${limit}`),
   },
 
   notifications: {

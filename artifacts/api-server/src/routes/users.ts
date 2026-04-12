@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { and, desc, eq, ilike, or, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, inArray, not, or, sql } from "drizzle-orm";
 import { db, users, posts, follows } from "../db";
 import { sendPushToUser } from "../lib/pushNotifications";
 
@@ -161,6 +161,48 @@ router.post("/:id/follow", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to toggle follow" });
+  }
+});
+
+router.get("/:id/suggestions", async (req, res) => {
+  try {
+    const myId = req.params.id;
+    const limit = Math.min(parseInt(String(req.query.limit ?? "12")), 30);
+
+    const followingRows = await db.select({ id: follows.followingId }).from(follows).where(eq(follows.followerId, myId));
+    const followingIds = followingRows.map((f) => f.id);
+    const excludeIds = [...followingIds, myId];
+
+    let fofScore: Record<string, number> = {};
+    if (followingIds.length > 0) {
+      const fofRows = await db
+        .select({ userId: follows.followingId, followedBy: follows.followerId })
+        .from(follows)
+        .where(and(inArray(follows.followerId, followingIds), not(inArray(follows.followingId, excludeIds))));
+      for (const row of fofRows) {
+        fofScore[row.userId] = (fofScore[row.userId] ?? 0) + 1;
+      }
+    }
+
+    const candidates = await db
+      .select()
+      .from(users)
+      .where(not(inArray(users.id, excludeIds)))
+      .limit(100);
+
+    const scored = candidates
+      .map((u) => ({ ...u, mutualFollowers: fofScore[u.id] ?? 0 }))
+      .sort((a, b) => {
+        const scoreA = a.mutualFollowers * 20 + (a.followersCount ?? 0) * 0.5 + (a.trustScore ?? 0) * 0.3 + (a.tipsCount ?? 0) * 0.2;
+        const scoreB = b.mutualFollowers * 20 + (b.followersCount ?? 0) * 0.5 + (b.trustScore ?? 0) * 0.3 + (b.tipsCount ?? 0) * 0.2;
+        return scoreB - scoreA;
+      })
+      .slice(0, limit);
+
+    res.json(scored);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to get suggestions" });
   }
 });
 

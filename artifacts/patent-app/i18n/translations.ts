@@ -73,6 +73,7 @@ export type TKeys =
   | "toastReposted" | "toastUnreposted" | "reposted" | "youReposted"
   | "notifFilterAll" | "notifFilterTips" | "notifFilterQuestions" | "notifFilterComments"
   | "notifFilterLabel"
+  | "suggestedForYou" | "mutualFollowers" | "popularUser" | "noSuggestions"
   | "share" | "viewProfile" | "loadMore" | "noMoreItems"
   | "users" | "searchUsers" | "noUsersFound"
   | "privacyPolicy" | "termsOfService" | "legalSection" | "aboutApp" | "appVersion"
@@ -125,6 +126,7 @@ const t: Record<string, Partial<Translations>> = {
     reposted: "פרסם מחדש", youReposted: "פרסמת מחדש",
     notifFilterLabel: "קבל התראות על",
     notifFilterAll: "הכל", notifFilterTips: "טיפים", notifFilterQuestions: "שאלות", notifFilterComments: "תגובות",
+    suggestedForYou: "מומלץ בשבילך", mutualFollowers: "עוקבים משותפים", popularUser: "פופולרי", noSuggestions: "אין הצעות כרגע",
     share: "שתף", viewProfile: "צפה בפרופיל",
     loadMore: "טען עוד", noMoreItems: "הגעת לסוף הפיד",
     users: "משתמשים", searchUsers: "חפש משתמשים...", noUsersFound: "לא נמצאו משתמשים",
@@ -176,6 +178,7 @@ const t: Record<string, Partial<Translations>> = {
     reposted: "reposted", youReposted: "You reposted",
     notifFilterLabel: "Notify me about",
     notifFilterAll: "All", notifFilterTips: "Tips", notifFilterQuestions: "Questions", notifFilterComments: "Comments",
+    suggestedForYou: "Suggested for you", mutualFollowers: "mutual followers", popularUser: "Popular", noSuggestions: "No suggestions right now",
     share: "Share", viewProfile: "View Profile",
     loadMore: "Load More", noMoreItems: "You've reached the end",
     users: "Users", searchUsers: "Search users...", noUsersFound: "No users found",

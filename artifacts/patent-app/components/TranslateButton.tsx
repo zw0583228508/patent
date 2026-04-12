@@ -18,8 +18,6 @@ export default function TranslateButton({ text, onTranslated, isTranslated }: Pr
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
 
-  if (langCode === "he") return null;
-
   async function handlePress() {
     if (isTranslated) {
       onTranslated(null);
